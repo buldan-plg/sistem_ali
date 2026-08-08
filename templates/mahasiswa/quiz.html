@@ -1,0 +1,391 @@
+{% extends "layout/templates_mhs.html" %}
+
+{% block body_class %}quiz-page{% endblock %}
+{% block nav_quiz %}active{% endblock %}
+
+{% block content_wrapper_class %}quiz-page{% endblock %}
+
+{% block content %}
+
+<!-- ── Quiz Toolbar (filter + progress) ── -->
+<div class="quiz-toolbar">
+  <span style="font-family:'JetBrains Mono',monospace; font-size:0.7rem; color:#6b6b8a; letter-spacing:1px; text-transform:uppercase;">Filter:</span>
+  <select id="filter-level" onchange="applyFilters()">
+    <option value="">Semua Level</option>
+    <option value="easy">Easy</option>
+    <option value="medium">Medium</option>
+    <option value="hard">Hard</option>
+  </select>
+  <select id="filter-category" onchange="applyFilters()">
+    <option value="">Semua Kategori</option>
+  </select>
+
+  <div class="quiz-toolbar-right">
+    <span class="quiz-progress-text" id="progress-text">0 / 0 selesai</span>
+    <div class="quiz-progress-bar-wrap">
+      <div class="quiz-progress-bar" id="progress-bar" style="width:0%"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Quiz Layout ── -->
+<div class="quiz-layout">
+
+  <!-- Sidebar -->
+  <aside class="quiz-sidebar" id="sidebar">
+    <div class="quiz-sidebar-title">Daftar Soal</div>
+    <div id="q-list"></div>
+  </aside>
+
+  <!-- Main -->
+  <div class="quiz-main">
+
+    <!-- Question Header -->
+    <div class="q-header" id="q-header">
+      <div class="quiz-empty-state" style="padding:1.5rem 0">
+        <div class="quiz-empty-state-icon">⌨️</div>
+        <p>Pilih soal dari sidebar untuk mulai coding</p>
+      </div>
+    </div>
+
+    <!-- Editor + Output -->
+    <div class="quiz-editor-area">
+
+      <!-- Code pane -->
+      <div class="quiz-editor-pane">
+        <div class="editor-toolbar">
+          <div class="dot dot-r"></div>
+          <div class="dot dot-y"></div>
+          <div class="dot dot-g"></div>
+          <div class="lang-tabs" id="lang-tabs"></div>
+        </div>
+        <textarea id="code-editor" spellcheck="false"
+          placeholder="// Pilih soal dulu..."></textarea>
+        
+      </div>
+
+      <!-- Right panel -->
+      <div class="quiz-right-panel">
+
+        <div class="panel-section">
+          <div class="panel-label">Output</div>
+          <pre id="output">—</pre>
+        </div>
+
+        <div class="panel-section">
+          <div class="panel-label">Hasil Validasi</div>
+          <div class="validation-box" id="validation-box">
+            <div class="validation-msg" id="validation-msg"></div>
+            <div class="validation-detail" id="validation-detail"></div>
+          </div>
+          <div class="panel-placeholder" id="validation-placeholder">
+            Jalankan kode untuk melihat hasil
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <div class="panel-label">Hint</div>
+          <div class="hint-box" id="hint-box">
+            <div id="hint-text"></div>
+            <div class="hint-counter" id="hint-counter"></div>
+          </div>
+          <div class="panel-placeholder" id="hint-placeholder">
+            Klik "Hint" jika butuh petunjuk
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Bottom bar -->
+    <div class="quiz-bottom-bar">
+      <button class="qz-btn qz-btn-run" id="btn-run" onclick="runCode()" disabled>
+        <i class="fas fa-play mr-1"></i> Run
+      </button>
+      <button class="qz-btn qz-btn-hint" id="btn-hint" onclick="getHint()" disabled>
+        <i class="fas fa-lightbulb mr-1"></i> Hint
+      </button>
+      <button class="qz-btn qz-btn-reset" id="btn-reset" onclick="resetCode()" disabled>
+        <i class="fas fa-undo mr-1"></i> Reset
+      </button>
+      <span class="run-status" id="run-status"></span>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}
+
+
+{% block js %}
+<script>
+  // ─── State ───────────────────────────────────────────
+  let allQuestions      = [];
+  let filteredQuestions = [];
+  let currentQuestion   = null;
+  let currentLang       = 'javascript';
+  let hintIndex         = 0;
+  let solvedIds         = new Set(JSON.parse(localStorage.getItem('solved') || '[]'));
+
+  // ─── Init ────────────────────────────────────────────
+  async function init() {
+    await loadQuestions();
+    await loadMetadata();
+    renderSidebar();
+    updateProgress();
+  }
+
+  async function loadQuestions() {
+    try {
+      const res  = await fetch('/mahasiswa/api/questions');
+      const data = await res.json();
+      allQuestions      = data.questions || [];
+      filteredQuestions = [...allQuestions];
+    } catch(e) { console.error('Gagal load soal:', e); }
+  }
+
+  async function loadMetadata() {
+    try {
+      const res  = await fetch('/mahasiswa/api/metadata');
+      const data = await res.json();
+      const sel  = document.getElementById('filter-category');
+      (data.categories || []).sort().forEach(cat => {
+        const opt       = document.createElement('option');
+        opt.value       = cat;
+        opt.textContent = cat.charAt(0).toUpperCase() + cat.slice(1);
+        sel.appendChild(opt);
+      });
+    } catch(e) {}
+  }
+
+  // ─── Filter ──────────────────────────────────────────
+  function applyFilters() {
+    const level    = document.getElementById('filter-level').value;
+    const category = document.getElementById('filter-category').value;
+    filteredQuestions = allQuestions.filter(q =>
+      (!level    || q.level    === level) &&
+      (!category || q.category === category)
+    );
+    renderSidebar();
+  }
+
+  // ─── Sidebar ─────────────────────────────────────────
+  function renderSidebar() {
+    const list = document.getElementById('q-list');
+    list.innerHTML = '';
+
+    if (!filteredQuestions.length) {
+      list.innerHTML = '<div style="color:var(--qz-muted);font-size:0.75rem;font-family:\'JetBrains Mono\',monospace;text-align:center;padding:1rem">Tidak ada soal</div>';
+      return;
+    }
+
+    filteredQuestions.forEach(q => {
+      const isSolved  = solvedIds.has(q.id) || q.solved;
+      const isActive  = currentQuestion?.id === q.id;
+      const card      = document.createElement('div');
+      card.className  = `q-card${isActive ? ' active' : ''}${isSolved ? ' solved' : ''}`;
+
+      card.innerHTML = `
+        <div class="q-card-title">${q.id}. ${q.title}</div>
+        <div class="q-card-meta">
+          <span class="qz-badge qz-badge-${q.level}">${q.level}</span>
+          <span class="qz-badge qz-badge-cat">${q.category}</span>
+        </div>`;
+
+      card.onclick = () => selectQuestion(q);
+      list.appendChild(card);
+    });
+  }
+
+  // ─── Select question ─────────────────────────────────
+  function selectQuestion(q) {
+    currentQuestion = q;
+    hintIndex       = 0;
+
+    const desc = (q.description || '')
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/`(.*?)`/g, '<code>$1</code>')
+      .replace(/\n/g, '<br>');
+
+    document.getElementById('q-header').innerHTML = `
+      <div class="q-number">Soal ${q.id} dari ${allQuestions.length}</div>
+      <div class="q-title-main">${q.title}</div>
+      <div class="q-description">${desc}</div>
+      <div class="q-badges">
+        <span class="qz-badge qz-badge-${q.level}">${q.level}</span>
+        <span class="qz-badge qz-badge-cat">${q.category}</span>
+      </div>`;
+
+    const langs = q.languages || ['javascript'];
+    if (!langs.includes(currentLang)) currentLang = langs[0];
+    renderLangTabs(langs);
+    setLanguage(currentLang);
+    resetOutputPanel();
+
+    document.getElementById('btn-run').disabled   = false;
+    document.getElementById('btn-hint').disabled  = false;
+    document.getElementById('btn-reset').disabled = false;
+
+    renderSidebar();
+  }
+
+  function renderLangTabs(langs) {
+    const tabs = document.getElementById('lang-tabs');
+    tabs.innerHTML = '';
+    langs.forEach(lang => {
+      const btn       = document.createElement('button');
+      btn.className   = `lang-tab${lang === currentLang ? ' active' : ''}`;
+      btn.textContent = lang.toUpperCase();
+      btn.onclick     = () => setLanguage(lang);
+      tabs.appendChild(btn);
+    });
+  }
+
+  function setLanguage(lang) {
+    currentLang = lang;
+    document.getElementById('code-editor').value = currentQuestion?.starter_code?.[lang] || '';
+    document.querySelectorAll('.lang-tab').forEach(t =>
+      t.classList.toggle('active', t.textContent.toLowerCase() === lang)
+    );
+  }
+
+  // ─── Run code ────────────────────────────────────────
+  async function runCode() {
+    if (!currentQuestion) return;
+
+    const code   = document.getElementById('code-editor').value;
+    const btn    = document.getElementById('btn-run');
+    btn.classList.add('loading');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Running...';
+
+    try {
+      const res  = await fetch('/mahasiswa/api/run', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({
+          language:    currentLang,
+          code:        code,
+          question_id: currentQuestion.id
+        })
+      });
+      const data = await res.json();
+
+      const outputEl       = document.getElementById('output');
+      outputEl.textContent = data.output || '(tidak ada output)';
+      outputEl.className   = data.output?.startsWith('❌') ? 'has-error' : '';
+
+      if (data.validation) {
+        showValidation(data.validation);
+        if (data.validation.correct) {
+          solvedIds.add(currentQuestion.id);
+          localStorage.setItem('solved', JSON.stringify([...solvedIds]));
+          updateProgress();
+          renderSidebar();
+        }
+      }
+
+      // Tampilkan point jika ada
+      if (data.point_result?.point) {
+        const p = data.point_result.point;
+        document.getElementById('run-status').innerHTML =
+          `<span style="color:var(--qz-accent)">+${p.total} pt</span>
+           <span style="color:var(--qz-muted); margin-left:4px; font-size:0.65rem">
+             (base:${p.base} hint:${p.bonus_hint} speed:${p.bonus_speed} penalty:${p.penalty})
+           </span>`;
+      } else {
+        document.getElementById('run-status').textContent =
+          '↳ ' + new Date().toLocaleTimeString();
+      }
+
+    } catch(e) {
+      document.getElementById('output').textContent = '❌ Gagal terhubung ke server';
+    } finally {
+      btn.classList.remove('loading');
+      btn.innerHTML = '<i class="fas fa-play mr-1"></i> Run';
+    }
+  }
+
+  // ─── Validation ──────────────────────────────────────
+  function showValidation(v) {
+    const box    = document.getElementById('validation-box');
+    const msg    = document.getElementById('validation-msg');
+    const detail = document.getElementById('validation-detail');
+
+    box.className    = `validation-box show ${v.correct ? 'correct' : 'wrong'}`;
+    msg.textContent  = v.message;
+    detail.innerHTML = !v.correct
+      ? `<strong>Expected:</strong> ${esc(v.expected)}<br><strong>Got:</strong> ${esc(v.actual)}`
+      : '';
+
+    document.getElementById('validation-placeholder').style.display = 'none';
+  }
+
+  // ─── Hint ────────────────────────────────────────────
+  async function getHint() {
+    if (!currentQuestion) return;
+    try {
+      const res  = await fetch(`/mahasiswa/api/questions/${currentQuestion.id}/hint?index=${hintIndex}`);
+      const data = await res.json();
+
+      if (data.hint) {
+        document.getElementById('hint-text').textContent    = '💡 ' + data.hint;
+        document.getElementById('hint-counter').textContent = `Hint ${data.index + 1} dari ${data.total}`;
+        document.getElementById('hint-box').classList.add('show');
+        document.getElementById('hint-placeholder').style.display = 'none';
+        if (data.has_more) hintIndex++;
+        else document.getElementById('btn-hint').innerHTML =
+          '<i class="fas fa-lightbulb mr-1"></i> Habis';
+      }
+    } catch(e) {}
+  }
+
+  // ─── Reset ───────────────────────────────────────────
+  function resetCode() {
+    if (!currentQuestion) return;
+    document.getElementById('code-editor').value = currentQuestion.starter_code?.[currentLang] || '';
+    resetOutputPanel();
+    hintIndex = 0;
+    document.getElementById('btn-hint').innerHTML = '<i class="fas fa-lightbulb mr-1"></i> Hint';
+  }
+
+  function resetOutputPanel() {
+    document.getElementById('output').textContent        = '—';
+    document.getElementById('output').className          = '';
+    document.getElementById('validation-box').className  = 'validation-box';
+    document.getElementById('validation-placeholder').style.display = '';
+    document.getElementById('hint-box').classList.remove('show');
+    document.getElementById('hint-placeholder').style.display = '';
+    document.getElementById('run-status').textContent    = '';
+  }
+
+  // ─── Progress ────────────────────────────────────────
+  function updateProgress() {
+    const total = allQuestions.length;
+    const done  = solvedIds.size;
+    document.getElementById('progress-text').textContent = `${done} / ${total} selesai`;
+    document.getElementById('progress-bar').style.width  = (total ? done / total * 100 : 0) + '%';
+  }
+
+  // ─── Utils ───────────────────────────────────────────
+  function esc(s) {
+    return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // Tab key & Ctrl+Enter di textarea
+  document.getElementById('code-editor').addEventListener('keydown', e => {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      const el = e.target, s = el.selectionStart;
+      el.value = el.value.substring(0, s) + '    ' + el.value.substring(el.selectionEnd);
+      el.selectionStart = el.selectionEnd = s + 4;
+    }
+    if (e.ctrlKey && e.key === 'Enter') runCode();
+  });
+
+  // Disable paste
+  document.getElementById('code-editor').addEventListener('paste', e => e.preventDefault());
+
+  // Start
+  init();
+</script>
+{% endblock %}

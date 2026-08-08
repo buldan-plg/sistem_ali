@@ -1,0 +1,67 @@
+{%extends "layout/templates.html"%}
+
+{%block content%}
+<div class="card card-dark">
+    <div class="card-header">
+        <h3 class="card-title">
+            <i class="fas fa-plus"></i> {{title}}
+        </h3>
+    </div>
+    <form action="/admin/mahasiswa/tambah" method="post">
+        <div class="card-body">
+            <div class="form-group">
+                <label for="nim">NIM</label>
+                <input type="text" name="nim" id="nim" class="form-control"
+                placeholder="masukkan nim mahasiswa...."
+                autofocus autocomplete="off" required>
+            </div>
+            <div class="form-group">
+                <label for="nama">Nama mahasiswa</label>
+                <input type="text" name="nama" id="nama" class="form-control"
+                placeholder="masukkan nama mahasiswa......">
+            </div>
+            <div class="form-group">
+                <label for="angkatan">Angkatan</label>
+                <input type="date" name="angkatan" id="angkatan" class="form-control"
+                placeholder="masukkan angkatan mahasiswa.....">
+            </div>
+            <div class="form-group">
+                <label for="jk">Jenis kelamin</label>
+                <select name="jk" id="jk" class="form-control">
+                    <option value="">Pilih jenis kelamin</option>
+                    <option value="L">Laki-Laki</option>
+                    <option value="P">Prempuan</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="tgl_lahir">Tanggal lahir</label>
+                <input type="date" name="tgl_lahir" id="tgl_lahir" class="form-control"
+                placeholder="masukkan tanggal lahir mahasiswa">
+            </div>
+            <div class="form-group">
+                <label for="email">E-mail</label>
+                <input type="email" name="email" id="email" class="form-control"
+                placeholder="masukkan email mahasiswa......">
+            </div>
+            <div class="form-group">
+                <label for="no_hp">Nomor handphone</label>
+                <input type="number" name="no_hp" id="no_hp" class="form-control"
+                placeholder="masukkan nomor handphone mahasiswa.....">
+            </div>
+            <div class="form-group">
+                <label for="alamat">Alamat</label>
+                <textarea name="alamat" id="alamat" class="form-control"
+                placeholder="masukkan alamat mahasiswa...." rows="5"></textarea>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-success">
+                <i class="fas fa-save"></i> Insert
+            </button>
+            <a href="/admin/mahasiswa" class="btn btn-secondary">
+                <i class="fas fa-reply"></i> Kembali
+            </a>
+        </div>
+    </form>
+</div>
+{%endblock%}

@@ -1,0 +1,418 @@
+{% extends "layout/templates_mhs.html" %}
+{% block body_class %}ch-submit-page{% endblock %}
+{% block nav_challenge %}active{% endblock %}
+
+{% block css %}
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0a0a0f; --surf:#111118; --surf2:#1a1a24; --border:#2a2a3a;
+  --accent:#00ff88; --warn:#ff6b35; --purple:#a78bfa; --text:#e2e2f0; --muted:#6b6b8a;
+}
+.ch-submit-page .content-wrapper { background:var(--bg) !important; }
+.ch-submit-page .content         { padding:1.5rem !important; }
+.ch-submit-page .content-header  { background:var(--surf) !important; border-bottom:1px solid var(--border); }
+.ch-submit-page .content-header h1 { font-family:'Syne',sans-serif; font-size:1.3rem; font-weight:800; color:var(--text); }
+.ch-submit-page .breadcrumb-item a { color:var(--accent); }
+.ch-submit-page .breadcrumb-item.active { color:var(--muted); }
+*, *::before, *::after { box-sizing:border-box; }
+
+/* Layout */
+.submit-wrap { max-width:860px; margin:0 auto; }
+
+/* Info banner */
+.info-banner {
+  background:rgba(0,255,136,0.05); border:1px solid rgba(0,255,136,0.2);
+  border-radius:10px; padding:1rem 1.2rem; margin-bottom:1.4rem;
+  font-family:'JetBrains Mono',monospace; font-size:0.78rem;
+  color:var(--muted); display:flex; gap:1rem; align-items:flex-start;
+}
+.info-banner-icon { font-size:1.4rem; flex-shrink:0; }
+.info-banner ul   { margin:0.4rem 0 0; padding-left:1.2rem; }
+.info-banner li   { margin-bottom:0.2rem; }
+.info-banner strong { color:var(--accent); }
+
+/* Sections */
+.form-section { background:var(--surf); border:1px solid var(--border); border-radius:10px; overflow:hidden; margin-bottom:1.2rem; }
+.form-section-hd {
+  background:var(--surf2); padding:0.7rem 1.2rem;
+  border-bottom:1px solid var(--border);
+  font-family:'JetBrains Mono',monospace; font-size:0.6rem;
+  letter-spacing:2px; text-transform:uppercase; color:var(--muted);
+}
+.form-section-bd { padding:1.2rem; }
+
+/* Form */
+.form-group { margin-bottom:1rem; }
+.form-group:last-child { margin-bottom:0; }
+.form-label {
+  display:block; font-family:'JetBrains Mono',monospace;
+  font-size:0.62rem; letter-spacing:1.5px; text-transform:uppercase;
+  color:var(--muted); margin-bottom:0.35rem;
+}
+.req { color:var(--warn); }
+.form-ctrl {
+  width:100%; background:var(--surf2); border:1px solid var(--border);
+  border-radius:7px; padding:0.55rem 0.85rem; color:var(--text);
+  font-family:'JetBrains Mono',monospace; font-size:0.8rem;
+  outline:none; transition:border-color 0.15s;
+}
+.form-ctrl:focus { border-color:var(--accent); }
+.form-ctrl::placeholder { color:var(--muted); }
+textarea.form-ctrl { resize:vertical; min-height:80px; line-height:1.65; }
+select.form-ctrl option { background:var(--surf2); }
+.grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+
+/* Lang checkboxes */
+.lang-group { display:flex; gap:0.7rem; }
+.lang-lbl {
+  display:flex; align-items:center; gap:0.4rem; padding:0.4rem 0.9rem;
+  border:1px solid var(--border); border-radius:7px; cursor:pointer;
+  font-family:'JetBrains Mono',monospace; font-size:0.75rem; color:var(--muted);
+  transition:all 0.15s; user-select:none;
+}
+.lang-lbl input { display:none; }
+.lang-lbl.on { border-color:var(--accent); color:var(--accent); background:rgba(0,255,136,0.05); }
+
+/* Starter code tabs */
+.sc-tabs { display:flex; gap:0.3rem; margin-bottom:0.6rem; }
+.sc-tab {
+  font-family:'JetBrains Mono',monospace; font-size:0.68rem; font-weight:700;
+  padding:0.25rem 0.75rem; border:1px solid var(--border); border-radius:5px;
+  background:transparent; color:var(--muted); cursor:pointer; transition:all 0.15s;
+}
+.sc-tab.active { background:var(--accent); border-color:var(--accent); color:#000; }
+.sc-pane { display:none; }
+.sc-pane.active { display:block; }
+.code-ta {
+  width:100%; background:#0d0d14; border:1px solid var(--border); border-radius:7px;
+  padding:0.8rem 1rem; color:#e2e2f0; font-family:'JetBrains Mono',monospace;
+  font-size:0.8rem; line-height:1.7; min-height:120px; resize:vertical;
+  outline:none; tab-size:4;
+}
+.code-ta:focus { border-color:var(--accent); }
+
+/* Test */
+.test-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+.test-out {
+  background:#0d0d14; border:1px solid var(--border); border-radius:7px;
+  padding:0.75rem 1rem; min-height:90px;
+}
+.test-out pre { margin:0; font-family:'JetBrains Mono',monospace; font-size:0.78rem; color:#e2e2f0; white-space:pre-wrap; }
+
+/* Buttons */
+.qz-btn {
+  font-family:'JetBrains Mono',monospace; font-size:0.75rem; font-weight:700;
+  padding:0.5rem 1.1rem; border-radius:7px; border:none; cursor:pointer;
+  transition:all 0.15s; text-transform:uppercase; letter-spacing:0.5px;
+  display:inline-flex; align-items:center; gap:0.4rem;
+}
+.qz-btn:disabled { opacity:0.5; cursor:not-allowed; }
+.btn-primary { background:var(--accent); color:#000; }
+.btn-primary:hover:not(:disabled) { background:#00e07a; transform:translateY(-1px); box-shadow:0 4px 14px rgba(0,255,136,.25); }
+.btn-outline { background:transparent; border:1px solid var(--border); color:var(--muted); }
+.btn-outline:hover { border-color:var(--accent); color:var(--accent); }
+.btn-info   { background:transparent; border:1px solid rgba(56,189,248,.4); color:#38bdf8; }
+.btn-info:hover { background:rgba(56,189,248,.08); }
+
+/* Footer bar */
+.form-footer {
+  display:flex; justify-content:space-between; align-items:center;
+  background:var(--surf); border:1px solid var(--border);
+  border-radius:10px; padding:1rem 1.4rem;
+}
+
+/* Toast */
+.toast-wrap { position:fixed; bottom:1.5rem; right:1.5rem; z-index:9999; display:flex; flex-direction:column; gap:0.5rem; }
+.qz-toast {
+  background:var(--surf); border:1px solid var(--border); border-radius:8px;
+  padding:0.75rem 1.1rem; font-family:'JetBrains Mono',monospace;
+  font-size:0.78rem; color:var(--text);
+  display:flex; align-items:center; gap:0.6rem;
+  box-shadow:0 8px 30px rgba(0,0,0,0.4);
+  transform:translateX(120%); opacity:0; transition:all 0.3s ease; max-width:320px;
+}
+.qz-toast.show { transform:none; opacity:1; }
+.qz-toast.ok  { border-color:rgba(0,255,136,0.35); }
+.qz-toast.err { border-color:rgba(255,107,53,0.35); }
+
+@media(max-width:768px) {
+  .grid-2, .test-grid { grid-template-columns:1fr; }
+  .lang-group { flex-wrap:wrap; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="submit-wrap">
+
+  <!-- Info banner -->
+  <div class="info-banner">
+    <div class="info-banner-icon">📋</div>
+    <div>
+      <strong>Cara submit challenge:</strong>
+      <ul>
+        <li>Tulis soal yang menarik dan jelas</li>
+        <li>Sertakan <strong>expected output</strong> yang tepat — test dulu sebelum submit</li>
+        <li>Challenge akan di-review dosen sebelum tayang</li>
+        <li>Jika ≥5 downvote dari komunitas, challenge akan ditarik otomatis</li>
+        <li>Kamu <strong>tidak bisa</strong> mengerjakan challengemu sendiri</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Section 1: Info -->
+  <div class="form-section">
+    <div class="form-section-hd">📝 Informasi Soal</div>
+    <div class="form-section-bd">
+
+      <div class="form-group">
+        <label class="form-label">Judul <span class="req">*</span></label>
+        <input class="form-ctrl" id="f-judul" type="text" placeholder="contoh: Cetak Bilangan Prima 1-100">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">
+          Deskripsi <span class="req">*</span>
+          <span style="text-transform:none;letter-spacing:0;color:var(--muted)"> — support **bold** dan `code`</span>
+        </label>
+        <textarea class="form-ctrl" id="f-deskripsi" rows="4"
+          placeholder="Buat program yang menampilkan semua bilangan prima dari 1 hingga 100, tiap angka di baris baru."></textarea>
+      </div>
+
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">Level <span class="req">*</span></label>
+          <select class="form-ctrl" id="f-level">
+            <option value="easy">Easy</option>
+            <option value="medium" selected>Medium</option>
+            <option value="hard">Hard</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Bahasa yang Didukung <span class="req">*</span></label>
+          <div class="lang-group">
+            <label class="lang-lbl on" id="lc-php">
+              <input type="checkbox" id="f-php" checked onchange="onLangChange()">
+              <i class="fab fa-php"></i> PHP
+            </label>
+            <label class="lang-lbl on" id="lc-js">
+              <input type="checkbox" id="f-js" checked onchange="onLangChange()">
+              <i class="fab fa-js-square"></i> JS
+            </label>
+            <label class="lang-lbl on" id="lc-python">
+              <input type="checkbox" id="f-python" checked onchange="onLangChange()">
+              <i class="fab fa-python"></i> Python
+            </label>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Section 2: Starter Code -->
+  <div class="form-section">
+    <div class="form-section-hd">💻 Starter Code (opsional)</div>
+    <div class="form-section-bd">
+      <div class="sc-tabs" id="sc-tabs"></div>
+      <div id="sc-panes">
+        <div class="sc-pane" id="pane-php">
+          <textarea class="code-ta" id="sc-php" placeholder="<?php&#10;// Tulis kode kamu di sini&#10;"></textarea>
+        </div>
+        <div class="sc-pane" id="pane-js">
+          <textarea class="code-ta" id="sc-js" placeholder="// Tulis kode kamu di sini"></textarea>
+        </div>
+        <div class="sc-pane" id="pane-python">
+          <textarea class="code-ta" id="sc-python" placeholder="# Tulis kode kamu di sini"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 3: Expected Output + Test -->
+  <div class="form-section">
+    <div class="form-section-hd">🎯 Expected Output & Test</div>
+    <div class="form-section-bd">
+      <div class="test-grid">
+        <div>
+          <div class="form-group">
+            <label class="form-label">Expected Output <span class="req">*</span></label>
+            <textarea class="form-ctrl" id="f-expected" rows="5"
+              placeholder="2&#10;3&#10;5&#10;7&#10;..."></textarea>
+          </div>
+          <button class="qz-btn btn-outline" style="font-size:0.68rem" onclick="copyOutput()">
+            <i class="fas fa-arrow-left"></i> Salin output ke sini
+          </button>
+        </div>
+        <div>
+          <div class="form-group">
+            <label class="form-label">Test Run</label>
+            <div style="display:flex;gap:0.5rem;margin-bottom:0.6rem">
+              <select class="form-ctrl" id="test-lang" style="flex:1">
+                <option value="php">PHP</option>
+                <option value="javascript">JavaScript</option>
+                <option value="python">Python</option>
+              </select>
+              <button class="qz-btn btn-info" id="btn-test" onclick="testRun()" style="white-space:nowrap">
+                <i class="fas fa-play"></i> Run
+              </button>
+            </div>
+            <div class="test-out"><pre id="test-out">—</pre></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="form-footer">
+    <a href="/mahasiswa/challenge" class="qz-btn btn-outline">
+      <i class="fas fa-arrow-left"></i> Batal
+    </a>
+    <button class="qz-btn btn-primary" id="btn-submit" onclick="submitChallenge()">
+      <i class="fas fa-paper-plane"></i> Submit Challenge
+    </button>
+  </div>
+
+</div>
+<div class="toast-wrap" id="toast-wrap"></div>
+{% endblock %}
+
+{% block js %}
+<script>
+let activeTab = 'php';
+
+document.addEventListener('DOMContentLoaded', () => {
+  buildScTabs();
+  document.querySelectorAll('.code-ta').forEach(el => {
+    el.addEventListener('keydown', e => {
+      if (e.key !== 'Tab') return;
+      e.preventDefault();
+      const s = el.selectionStart;
+      el.value = el.value.substring(0,s)+'    '+el.value.substring(el.selectionEnd);
+      el.selectionStart = el.selectionEnd = s+4;
+    });
+  });
+});
+
+// ─── Lang ─────────────────────────────────────────────
+function onLangChange() {
+  ['php','js','python'].forEach(l => {
+    const cb = document.getElementById(`f-${l}`);
+    document.getElementById(`lc-${l}`).classList.toggle('on', cb.checked);
+  });
+  buildScTabs();
+}
+
+function buildScTabs() {
+  const el  = document.getElementById('sc-tabs');
+  const map = {php:{label:'PHP',id:'f-php'},js:{label:'JavaScript',id:'f-js'},python:{label:'Python',id:'f-python'}};
+  el.innerHTML = '';
+  let first = null;
+  ['php','js','python'].forEach(l => {
+    if (!document.getElementById(map[l].id).checked) return;
+    if (!first) first = l;
+    const btn      = document.createElement('button');
+    btn.type       = 'button';
+    btn.className  = `sc-tab${l===activeTab?' active':''}`;
+    btn.textContent = map[l].label;
+    btn.dataset.l  = l;
+    btn.onclick    = () => switchTab(l);
+    el.appendChild(btn);
+  });
+  if (!document.getElementById(`f-${activeTab}`)?.checked && first) switchTab(first);
+}
+
+function switchTab(lang) {
+  activeTab = lang;
+  document.querySelectorAll('.sc-tab').forEach(t => t.classList.toggle('active', t.dataset.l===lang));
+  document.querySelectorAll('.sc-pane').forEach(p => p.classList.remove('active'));
+  document.getElementById(`pane-${lang}`)?.classList.add('active');
+}
+
+// ─── Test ─────────────────────────────────────────────
+async function testRun() {
+  const lang  = document.getElementById('test-lang').value;
+  const scMap = {php:'sc-php',javascript:'sc-js',python:'sc-python'};
+  const code  = document.getElementById(scMap[lang])?.value||'';
+  const outEl = document.getElementById('test-out');
+  const btn   = document.getElementById('btn-test');
+
+  if (!code.trim()) { toast('Tulis starter code dulu.','err'); return; }
+
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; btn.disabled = true;
+  outEl.textContent = '⏳ running...';
+
+  try {
+    const res  = await fetch('/api/admin/soal/test', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({language:lang, code})
+    });
+    const data = await res.json();
+    outEl.textContent  = data.output||'(tidak ada output)';
+    outEl.style.color  = (data.output||'').startsWith('❌') ? 'var(--warn)' : '#e2e2f0';
+  } catch(e) { outEl.textContent = '❌ Gagal koneksi'; }
+  finally { btn.innerHTML = '<i class="fas fa-play"></i> Run'; btn.disabled = false; }
+}
+
+function copyOutput() {
+  const out = document.getElementById('test-out').textContent;
+  if (out==='—'||out.startsWith('⏳')) return;
+  document.getElementById('f-expected').value = out;
+  toast('Output disalin ✓','ok');
+}
+
+// ─── Submit ───────────────────────────────────────────
+async function submitChallenge() {
+  const judul    = document.getElementById('f-judul').value.trim();
+  const deskripsi= document.getElementById('f-deskripsi').value.trim();
+  const expected = document.getElementById('f-expected').value.trim();
+  const level    = document.getElementById('f-level').value;
+  const phpOk    = document.getElementById('f-php').checked;
+  const jsOk     = document.getElementById('f-js').checked;
+  const pyOk     = document.getElementById('f-python').checked;
+
+  if (!judul)    { toast('Judul wajib diisi!','err');           return; }
+  if (!deskripsi){ toast('Deskripsi wajib diisi!','err');       return; }
+  if (!expected) { toast('Expected output wajib diisi!','err'); return; }
+  if (!phpOk && !jsOk && !pyOk) { toast('Pilih minimal 1 bahasa!','err'); return; }
+
+  const payload = {
+    judul, deskripsi, expected_output:expected, level,
+    starter_code: {
+      php:        document.getElementById('sc-php').value,
+      javascript: document.getElementById('sc-js').value,
+      python:     document.getElementById('sc-python').value,
+    }
+  };
+
+  const btn = document.getElementById('btn-submit');
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengirim...'; btn.disabled = true;
+
+  try {
+    const res  = await fetch('/api/challenges', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (data.success) {
+      toast('Challenge berhasil disubmit! Menunggu review dosen.','ok');
+      setTimeout(() => window.location='/mahasiswa/challenge', 2000);
+    } else { toast(data.message||data.error||'Gagal submit.','err'); }
+  } catch(e) { toast('Gagal koneksi ke server.','err'); }
+  finally { btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Challenge'; btn.disabled = false; }
+}
+
+function toast(msg, type='ok') {
+  const wrap = document.getElementById('toast-wrap');
+  const el   = document.createElement('div');
+  el.className = `qz-toast ${type}`;
+  el.innerHTML = `<i class="fas fa-${type==='ok'?'check-circle':'exclamation-circle'}"
+    style="color:${type==='ok'?'var(--accent)':'var(--warn)'};flex-shrink:0"></i> ${msg}`;
+  wrap.appendChild(el);
+  requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('show')));
+  setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 400); }, 3500);
+}
+</script>
+{% endblock %}

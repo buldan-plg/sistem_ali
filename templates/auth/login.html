@@ -1,0 +1,97 @@
+{%extends "layout/template_auth.html"%}
+
+{%block content%}
+<div class="card card-outline card-primary">
+
+    <div class="card-header text-center">
+        <img src="{{ url_for('static', filename='dist/img/logostmik.jpg') }}" 
+             alt="Logo STMIK CM" 
+             class="img-fluid" 
+             style="max-height: 150px;">
+    </div>
+
+    <div class="card-body">
+        <p class="login-box-msg">Sign in to start your session</p>
+
+        <form action="{{ url_for('auth.login') }}" method="post">
+
+            {# Username #}
+            <div class="input-group mb-3">
+                <input type="text"
+                    name="username"
+                    id="username"
+                    class="form-control {% if error.username %}is-invalid{% endif %}"
+                    placeholder="Username"
+                    required autofocus autocomplete="off">
+                <div class="input-group-append">
+                    <div class="input-group-text">
+                        <span class="fas fa-user"></span>
+                    </div>
+                </div>
+                {% if error.username %}
+                    <div class="invalid-feedback">{{ error.username }}</div>
+                {% endif %}
+            </div>
+
+            {# Password #}
+            <div class="input-group mb-2">
+                <input type="password"
+                    name="password"
+                    id="password"
+                    class="form-control {% if error.password %}is-invalid{% endif %}"
+                    placeholder="Password"
+                    required>
+                <div class="input-group-append">
+                    <div class="input-group-text">
+                        <span class="fas fa-lock"></span>
+                    </div>
+                </div>
+                {% if error.password %}
+                    <div class="invalid-feedback">{{ error.password }}</div>
+                {% endif %}
+            </div>
+
+            {# Show password toggle #}
+            <div class="icheck-primary mb-3">
+                <input type="checkbox" id="showPassword">
+                <label for="showPassword">Tampilkan Password</label>
+            </div>
+
+            <div class="row">
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary btn-block">
+                        <i class="fas fa-sign-in-alt mr-1"></i> Sign In
+                    </button>
+                </div>
+            </div>
+
+        </form>
+    </div>
+
+</div>
+{%endblock%}
+
+{%block js%}
+<script>
+    document.getElementById('showPassword').addEventListener('change', function () {
+        const password = document.getElementById('password');
+        password.type = this.checked ? 'text' : 'password';
+    });
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const flashes = document.querySelectorAll('.flash-data');
+    
+        flashes.forEach(el => {
+            $(document).Toasts('create', {
+                class: 'bg-' + el.dataset.category,
+                title: 'Notifikasi',
+                body: el.dataset.message,
+                autohide: true,
+                delay: 3000
+            });
+        });
+    });
+</script>
+{%endblock%}

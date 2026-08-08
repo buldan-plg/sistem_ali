@@ -1,0 +1,1205 @@
+{% extends "layout/templates.html" %} {% block body_class %}admin-dash-page{%
+endblock %} {% block css %}
+<link
+  href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@700;800&display=swap"
+  rel="stylesheet"
+/>
+<style>
+  :root {
+    --bg: #615959;
+    --surf: #f3f3f4;
+    --surf2: #1a1a24;
+    --surf3: #22222e;
+    --border: #2a2a3a;
+    --accent: #00ff88;
+    --warn: #ff6b35;
+    --info: #38bdf8;
+    --gold: #fbbf24;
+    --silver: #94a3b8;
+    --bronze: #cd7c3a;
+    --purple: #a78bfa;
+    --red: #f87171;
+    --text: #e2e2f0;
+    --muted: #6b6b8a;
+  }
+
+  .admin-dash-page .content-wrapper {
+    background: var(--bg) !important;
+  }
+  .admin-dash-page .content {
+    padding: 1.5rem !important;
+  }
+  .admin-dash-page .content-header {
+    background: var(--surf) !important;
+    border-bottom: 1px solid var(--border);
+  }
+  .admin-dash-page .content-header h1 {
+    font-family: "Syne", sans-serif;
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--text);
+  }
+  .admin-dash-page .breadcrumb-item a {
+    color: var(--accent);
+  }
+  .admin-dash-page .breadcrumb-item.active {
+    color: var(--muted);
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+  body,
+  * {
+    font-family: "JetBrains Mono", monospace;
+  }
+
+  /* ── Stat Row ── */
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0.9rem;
+    margin-bottom: 1.2rem;
+  }
+  .stat-card {
+    background: var(--surf);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.1rem;
+    position: relative;
+    overflow: hidden;
+    transition:
+      border-color 0.2s,
+      transform 0.15s;
+    cursor: default;
+  }
+  .stat-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+  .stat-card-accent {
+    border-color: rgba(0, 255, 136, 0.3);
+  }
+  .stat-card-warn {
+    border-color: rgba(255, 107, 53, 0.3);
+  }
+  .stat-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 60px;
+    height: 60px;
+    border-radius: 0 10px 0 60px;
+    opacity: 0.07;
+  }
+  .stat-card-accent::before {
+    background: var(--accent);
+  }
+  .stat-card-warn::before {
+    background: var(--warn);
+  }
+  .stat-card-info::before {
+    background: var(--info);
+  }
+  .stat-card-purple::before {
+    background: var(--purple);
+  }
+  .stat-icon {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .stat-val {
+    font-family: "Syne", sans-serif;
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1;
+  }
+  .stat-lbl {
+    font-size: 0.6rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-top: 4px;
+  }
+  .stat-sub {
+    font-size: 0.65rem;
+    margin-top: 3px;
+  }
+
+  /* ── Grid layouts ── */
+  .grid-3-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1.1rem;
+    margin-bottom: 1.2rem;
+  }
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.1rem;
+    margin-bottom: 1.2rem;
+  }
+  .grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1.1rem;
+    margin-bottom: 1.2rem;
+  }
+  .col-span-2 {
+    grid-column: span 2;
+  }
+
+  /* ── Card ── */
+  .qz-card {
+    background: var(--surf);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .qz-card-header {
+    padding: 0.85rem 1.2rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surf2);
+  }
+  .qz-card-title {
+    font-family: "Syne", sans-serif;
+    font-size: 0.88rem;
+    font-weight: 800;
+    color: var(--text);
+  }
+  .qz-card-body {
+    padding: 1rem;
+    flex: 1;
+  }
+  .card-link {
+    font-size: 0.65rem;
+    color: var(--accent);
+    text-decoration: none;
+    transition: opacity 0.15s;
+  }
+  .card-link:hover {
+    opacity: 0.7;
+  }
+
+  /* ── Table ── */
+  .qz-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.75rem;
+  }
+  .qz-table th {
+    padding: 0.55rem 0.8rem;
+    text-align: left;
+    font-size: 0.58rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .qz-table td {
+    padding: 0.7rem 0.8rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    vertical-align: middle;
+  }
+  .qz-table tr:last-child td {
+    border-bottom: none;
+  }
+  .qz-table tbody tr:hover td {
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  /* ── Badges ── */
+  .bdg {
+    display: inline-block;
+    font-size: 0.55rem;
+    font-weight: 700;
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .bdg-easy {
+    background: rgba(0, 255, 136, 0.12);
+    color: #00ff88;
+  }
+  .bdg-medium {
+    background: rgba(255, 190, 11, 0.12);
+    color: #ffbe0b;
+  }
+  .bdg-hard {
+    background: rgba(255, 107, 53, 0.12);
+    color: #ff6b35;
+  }
+  .bdg-cat {
+    background: rgba(124, 58, 237, 0.15);
+    color: #a78bfa;
+  }
+  .bdg-php {
+    background: rgba(56, 189, 248, 0.12);
+    color: #38bdf8;
+  }
+  .bdg-js {
+    background: rgba(251, 191, 36, 0.12);
+    color: #fbbf24;
+  }
+  .bdg-python {
+    background: rgba(52, 211, 153, 0.12);
+    color: #34d399;
+  }
+  .bdg-ok {
+    background: rgba(0, 255, 136, 0.12);
+    color: #00ff88;
+  }
+  .bdg-fail {
+    background: rgba(248, 113, 113, 0.12);
+    color: #f87171;
+  }
+
+  /* ── Progress bar inline ── */
+  .prog-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .prog-track {
+    flex: 1;
+    height: 5px;
+    background: var(--surf2);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .prog-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 1s ease;
+  }
+  .prog-fill-green {
+    background: var(--accent);
+  }
+  .prog-fill-yellow {
+    background: var(--gold);
+  }
+  .prog-fill-red {
+    background: var(--red);
+  }
+  .prog-val {
+    font-size: 0.68rem;
+    color: var(--muted);
+    min-width: 38px;
+    text-align: right;
+  }
+
+  /* ── Leaderboard ── */
+  .lb-item {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.65rem 0.9rem;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.12s;
+  }
+  .lb-item:last-child {
+    border-bottom: none;
+  }
+  .lb-item:hover {
+    background: rgba(255, 255, 255, 0.02);
+  }
+  .lb-rank {
+    font-family: "Syne", sans-serif;
+    font-size: 0.85rem;
+    font-weight: 800;
+    min-width: 26px;
+    text-align: center;
+  }
+  .lb-rank.r1 {
+    color: var(--gold);
+  }
+  .lb-rank.r2 {
+    color: var(--silver);
+  }
+  .lb-rank.r3 {
+    color: var(--bronze);
+  }
+  .lb-rank.rn {
+    color: var(--muted);
+  }
+  .lb-av {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--surf2);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Syne", sans-serif;
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+  .lb-item.r1 .lb-av {
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+  .lb-item.r2 .lb-av {
+    border-color: var(--silver);
+    color: var(--silver);
+  }
+  .lb-item.r3 .lb-av {
+    border-color: var(--bronze);
+    color: var(--bronze);
+  }
+  .lb-name {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .lb-nim {
+    font-size: 0.6rem;
+    color: var(--muted);
+  }
+  .lb-pt {
+    font-family: "Syne", sans-serif;
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: var(--text);
+  }
+  .lb-ptlb {
+    font-size: 0.55rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* ── Pending challenge card ── */
+  .pending-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.8rem;
+    padding: 0.75rem;
+    background: var(--surf2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+  }
+  .pending-item:last-child {
+    margin-bottom: 0;
+  }
+  .pending-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--gold);
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+  .pending-title {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 3px;
+  }
+  .pending-meta {
+    font-size: 0.65rem;
+    color: var(--muted);
+  }
+  .pending-actions {
+    margin-left: auto;
+    display: flex;
+    gap: 0.4rem;
+    flex-shrink: 0;
+  }
+
+  /* ── Buttons ── */
+  .qz-btn {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 0.3rem 0.7rem;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  .qz-btn-ok {
+    background: rgba(0, 255, 136, 0.12);
+    color: var(--accent);
+    border: 1px solid rgba(0, 255, 136, 0.25);
+  }
+  .qz-btn-ok:hover {
+    background: rgba(0, 255, 136, 0.2);
+  }
+  .qz-btn-rej {
+    background: rgba(248, 113, 113, 0.1);
+    color: var(--red);
+    border: 1px solid rgba(248, 113, 113, 0.25);
+  }
+  .qz-btn-rej:hover {
+    background: rgba(248, 113, 113, 0.2);
+  }
+
+  /* ── Activity feed ── */
+  .feed-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .feed-item:last-child {
+    border-bottom: none;
+  }
+  .feed-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .feed-dot.ok {
+    background: var(--accent);
+  }
+  .feed-dot.fail {
+    background: var(--warn);
+  }
+  .feed-name {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .feed-soal {
+    font-size: 0.65rem;
+    color: var(--muted);
+  }
+  .feed-right {
+    margin-left: auto;
+    text-align: right;
+  }
+  .feed-time {
+    font-size: 0.6rem;
+    color: var(--muted);
+  }
+  .feed-badge {
+    font-size: 0.55rem;
+  }
+
+  /* ── Kategori bars ── */
+  .kat-item {
+    margin-bottom: 0.75rem;
+  }
+  .kat-item:last-child {
+    margin-bottom: 0;
+  }
+  .kat-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.68rem;
+    margin-bottom: 0.3rem;
+  }
+  .kat-name {
+    color: var(--text);
+    text-transform: capitalize;
+  }
+  .kat-val {
+    color: var(--muted);
+  }
+
+  /* ── Level donut (CSS only) ── */
+  .level-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0.8rem;
+  }
+  .level-item {
+    background: var(--surf2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.8rem;
+    text-align: center;
+  }
+  .level-num {
+    font-family: "Syne", sans-serif;
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--text);
+  }
+  .level-name {
+    font-size: 0.6rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 2px;
+  }
+  .level-sub {
+    font-size: 0.65rem;
+    margin-top: 4px;
+  }
+
+  /* ── Empty ── */
+  .empty {
+    text-align: center;
+    padding: 1.5rem;
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+  .empty-icon {
+    font-size: 1.8rem;
+    opacity: 0.3;
+    margin-bottom: 0.4rem;
+  }
+
+  /* ── Toast ── */
+  .toast-wrap {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .qz-toast {
+    background: var(--surf);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.7rem 1rem;
+    font-size: 0.75rem;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    transform: translateX(120%);
+    opacity: 0;
+    transition: all 0.3s ease;
+    max-width: 300px;
+  }
+  .qz-toast.show {
+    transform: none;
+    opacity: 1;
+  }
+  .qz-toast.ok {
+    border-color: rgba(0, 255, 136, 0.35);
+  }
+  .qz-toast.err {
+    border-color: rgba(248, 113, 113, 0.35);
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 1200px) {
+    .stat-row {
+      grid-template-columns: repeat(3, 1fr);
+    }
+    .grid-3-2 {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  @media (max-width: 768px) {
+    .stat-row {
+      grid-template-columns: 1fr 1fr;
+    }
+    .grid-2,
+    .grid-3,
+    .grid-3-2 {
+      grid-template-columns: 1fr;
+    }
+    .col-span-2 {
+      grid-column: span 1;
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+
+<!-- ── Stat Cards ── -->
+<div class="stat-row" id="stat-row">
+  <div class="stat-card stat-card-accent">
+    <div class="stat-icon">📋</div>
+    <div class="stat-val" id="s-soal">—</div>
+    <div class="stat-lbl">Total Soal</div>
+  </div>
+  <div class="stat-card stat-card-info">
+    <div class="stat-icon">👥</div>
+    <div class="stat-val" id="s-mhs">—</div>
+    <div class="stat-lbl">Mahasiswa</div>
+    <div class="stat-sub" id="s-inactive" style="color: var(--warn)"></div>
+  </div>
+  <div class="stat-card stat-card-accent">
+    <div class="stat-icon">✅</div>
+    <div class="stat-val" id="s-solved">—</div>
+    <div class="stat-lbl">Total Solved</div>
+  </div>
+  <div class="stat-card stat-card-purple">
+    <div class="stat-icon">⭐</div>
+    <div class="stat-val" id="s-pt">—</div>
+    <div class="stat-lbl">Point Terdistribusi</div>
+  </div>
+  <div class="stat-card stat-card-warn">
+    <div class="stat-icon">⏳</div>
+    <div class="stat-val" id="s-pending">—</div>
+    <div class="stat-lbl">Challenge Pending</div>
+  </div>
+  <div class="stat-card stat-card-info">
+    <div class="stat-icon">🔥</div>
+    <div class="stat-val" id="s-active-ch">—</div>
+    <div class="stat-lbl">Challenge Aktif</div>
+  </div>
+</div>
+
+<!-- ── Row 2: Distribusi Level + Kategori + Leaderboard ── -->
+<div class="grid-3-2" style="grid-template-columns: 1fr 1fr 1.2fr">
+  <!-- Distribusi Level -->
+  <div class="qz-card">
+    <div class="qz-card-header">
+      <span class="qz-card-title">📊 Statistik Level</span>
+    </div>
+    <div class="qz-card-body">
+      <div class="level-stats" id="level-stats">
+        <div class="level-item">
+          <div class="level-num" id="lv-easy-s">—</div>
+          <div class="level-name" style="color: var(--accent)">Easy</div>
+          <div
+            class="level-sub"
+            id="lv-easy-a"
+            style="color: var(--muted)"
+          ></div>
+        </div>
+        <div class="level-item">
+          <div class="level-num" id="lv-medium-s">—</div>
+          <div class="level-name" style="color: var(--gold)">Medium</div>
+          <div
+            class="level-sub"
+            id="lv-medium-a"
+            style="color: var(--muted)"
+          ></div>
+        </div>
+        <div class="level-item">
+          <div class="level-num" id="lv-hard-s">—</div>
+          <div class="level-name" style="color: var(--warn)">Hard</div>
+          <div
+            class="level-sub"
+            id="lv-hard-a"
+            style="color: var(--muted)"
+          ></div>
+        </div>
+      </div>
+
+      <div
+        style="
+          margin-top: 1.2rem;
+          border-top: 1px solid var(--border);
+          padding-top: 1rem;
+        "
+      >
+        <div
+          style="
+            font-size: 0.6rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 0.7rem;
+          "
+        >
+          Success Rate per Level
+        </div>
+        <div id="level-bars"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Statistik Kategori -->
+  <div class="qz-card">
+    <div class="qz-card-header">
+      <span class="qz-card-title">🗂️ Statistik Kategori</span>
+    </div>
+    <div class="qz-card-body">
+      <div id="kat-bars">
+        <div class="empty">
+          <div class="empty-icon">⏳</div>
+          Memuat...
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leaderboard -->
+  <div class="qz-card">
+    <div class="qz-card-header">
+      <span class="qz-card-title">🏆 Top Leaderboard</span>
+      <a href="/admin/leaderboard" class="card-link">Lihat semua →</a>
+    </div>
+    <div id="lb-list">
+      <div class="empty">
+        <div class="empty-icon">⏳</div>
+        Memuat...
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Row 3: Top Soal + Soal Susah ── -->
+<div class="grid-2">
+  <!-- Soal paling banyak dikerjakan -->
+  <div class="qz-card">
+    <div class="qz-card-header">
+      <span class="qz-card-title">📈 Soal Terpopuler</span>
+      <a href="/admin/soal" class="card-link">Kelola →</a>
+    </div>
+    <div style="overflow-x: auto">
+      <table class="qz-table" id="top-soal-table">
+        <thead>
+          <tr>
+            <th>Soal</th>
+            <th>Level</th>
+            <th>Attempt</th>
+            <th>Success Rate</th>
+          </tr>
+        </thead>
+        <tbody id="top-soal-body">
+          <tr>
+            <td colspan="4" class="empty">
+              <i class="fas fa-spinner fa-spin"></i> Memuat...
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Soal paling sulit -->
+  <div class="qz-card">
+    <div class="qz-card-header">
+      <span class="qz-card-title">💀 Soal Paling Sulit</span>
+      <span style="font-size: 0.6rem; color: var(--muted)">min. 3 attempt</span>
+    </div>
+    <div style="overflow-x: auto">
+      <table class="qz-table" id="hard-soal-table">
+        <thead>
+          <tr>
+            <th>Soal</th>
+            <th>Level</th>
+            <th>Attempt</th>
+            <th>Success Rate</th>
+          </tr>
+        </thead>
+        <tbody id="hard-soal-body">
+          <tr>
+            <td colspan="4" class="empty">
+              <i class="fas fa-spinner fa-spin"></i> Memuat...
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ── Row 4: Challenge Pending + Aktivitas Terbaru ── -->
+<div class="grid-2">
+  <!-- Challenge pending review -->
+  <div class="qz-card">
+    <div class="qz-card-header">
+      <span class="qz-card-title">⏳ Challenge Menunggu Review</span>
+      <a href="/admin/challenge" class="card-link">Semua →</a>
+    </div>
+    <div class="qz-card-body" id="pending-wrap">
+      <div class="empty">
+        <div class="empty-icon">⏳</div>
+        Memuat...
+      </div>
+    </div>
+  </div>
+
+  <!-- Aktivitas terbaru -->
+  <div class="qz-card">
+    <div class="qz-card-header">
+      <span class="qz-card-title">⚡ Aktivitas Terbaru</span>
+    </div>
+    <div class="qz-card-body" style="padding: 0.5rem 0.8rem" id="feed-wrap">
+      <div class="empty">
+        <div class="empty-icon">⏳</div>
+        Memuat...
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toast-wrap"></div>
+
+{% endblock %} {% block js %}
+<script>
+  document.addEventListener("DOMContentLoaded", loadDashboard);
+
+  async function loadDashboard() {
+    try {
+      const res = await fetch("/admin/api/dashboard");
+      const data = await res.json();
+      if (data.error) return;
+
+      renderStats(data.stats);
+      renderLevelStats(data.level_dist);
+      renderKategori(data.kategori_stats);
+      renderLeaderboard(data.leaderboard);
+      renderTopSoal(data.top_soal);
+      renderHardSoal(data.hardest_soal);
+      renderPending(data.pending_challenges);
+      renderFeed(data.recent_activity);
+    } catch (e) {
+      toast("Gagal memuat data dashboard.", "err");
+    }
+  }
+
+  // ── Stat Cards ────────────────────────────────────────
+  function renderStats(s) {
+    document.getElementById("s-soal").textContent = s.total_soal;
+    document.getElementById("s-mhs").textContent = s.total_mahasiswa;
+    document.getElementById("s-solved").textContent = fmt(s.total_solved);
+    document.getElementById("s-pt").textContent = fmt(
+      s.total_point_distributed,
+    );
+    document.getElementById("s-pending").textContent =
+      s.total_pending_challenge;
+    document.getElementById("s-active-ch").textContent =
+      s.total_active_challenge;
+    if (s.total_inactive > 0) {
+      document.getElementById("s-inactive").textContent =
+        s.total_inactive + " belum mulai";
+    }
+  }
+
+  // ── Level Stats ───────────────────────────────────────
+  function renderLevelStats(dist) {
+    const map = {};
+    (dist || []).forEach((d) => {
+      map[d.level] = d;
+    });
+
+    ["easy", "medium", "hard"].forEach((lv) => {
+      const d = map[lv] || { total_solved: 0, total_attempt: 0 };
+      const rate =
+        d.total_attempt > 0
+          ? Math.round((d.total_solved / d.total_attempt) * 100)
+          : 0;
+      document.getElementById(`lv-${lv}-s`).textContent = fmt(d.total_solved);
+      document.getElementById(`lv-${lv}-a`).textContent =
+        `${d.total_attempt} attempt`;
+    });
+
+    // Progress bars
+    const barsEl = document.getElementById("level-bars");
+    const colors = {
+      easy: "var(--accent)",
+      medium: "var(--gold)",
+      hard: "var(--warn)",
+    };
+    barsEl.innerHTML = ["easy", "medium", "hard"]
+      .map((lv) => {
+        const d = map[lv] || { total_solved: 0, total_attempt: 0 };
+        const rate =
+          d.total_attempt > 0
+            ? Math.round((d.total_solved / d.total_attempt) * 100)
+            : 0;
+        return `<div style="margin-bottom:0.6rem">
+      <div style="display:flex;justify-content:space-between;font-size:0.65rem;margin-bottom:3px">
+        <span style="text-transform:capitalize;color:var(--text)">${lv}</span>
+        <span style="color:var(--muted)">${rate}% success</span>
+      </div>
+      <div style="height:5px;background:var(--surf2);border-radius:3px;overflow:hidden">
+        <div style="height:100%;width:${rate}%;background:${colors[lv]};border-radius:3px;transition:width 1s ease"></div>
+      </div>
+    </div>`;
+      })
+      .join("");
+  }
+
+  // ── Kategori bars ─────────────────────────────────────
+  function renderKategori(list) {
+    const el = document.getElementById("kat-bars");
+    if (!list || !list.length) {
+      el.innerHTML =
+        '<div class="empty"><div class="empty-icon">📭</div>Belum ada data</div>';
+      return;
+    }
+
+    const maxAttempt = Math.max(...list.map((k) => k.total_attempt || 0), 1);
+
+    el.innerHTML = list
+      .map((k) => {
+        const pct = Math.round((k.total_attempt / maxAttempt) * 100);
+        const rate =
+          k.total_attempt > 0
+            ? Math.round((k.total_solved / k.total_attempt) * 100)
+            : 0;
+        return `<div class="kat-item">
+      <div class="kat-label">
+        <span class="kat-name">${esc(k.kategori)}</span>
+        <span class="kat-val">${k.total_attempt} attempt · ${rate}% sukses</span>
+      </div>
+      <div style="height:5px;background:var(--surf2);border-radius:3px;overflow:hidden">
+        <div style="height:100%;width:${pct}%;background:var(--purple);border-radius:3px;transition:width 1s ease"></div>
+      </div>
+    </div>`;
+      })
+      .join("");
+  }
+
+  // ── Leaderboard ───────────────────────────────────────
+  function renderLeaderboard(lb) {
+    const el = document.getElementById("lb-list");
+    if (!lb || !lb.length) {
+      el.innerHTML =
+        '<div class="empty"><div class="empty-icon">🏜️</div>Belum ada data</div>';
+      return;
+    }
+
+    const medals = { 1: "🥇", 2: "🥈", 3: "🥉" };
+    el.innerHTML = lb
+      .map((r) => {
+        const rk = r.rank;
+        const cls = rk <= 3 ? `r${rk}` : "rn";
+        return `<div class="lb-item ${cls}">
+      <div class="lb-rank ${cls}">${medals[rk] || "#" + rk}</div>
+      <div class="lb-av">${(r.nama_mahasiswa || "?").charAt(0).toUpperCase()}</div>
+      <div style="flex:1;min-width:0">
+        <div class="lb-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(r.nama_mahasiswa)}</div>
+        <div class="lb-nim">${esc(r.nim)}${r.angkatan ? " · " + r.angkatan : ""}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="lb-pt">${fmt(r.total_point)}</div>
+        <div class="lb-ptlb">pt</div>
+        <div style="font-size:0.58rem;color:var(--muted)">${r.total_soal_solved} soal</div>
+      </div>
+    </div>`;
+      })
+      .join("");
+  }
+
+  // ── Top Soal ──────────────────────────────────────────
+  function renderTopSoal(list) {
+    const tbody = document.getElementById("top-soal-body");
+    if (!list || !list.length) {
+      tbody.innerHTML =
+        '<tr><td colspan="4"><div class="empty"><div class="empty-icon">📭</div>Belum ada data</div></td></tr>';
+      return;
+    }
+    tbody.innerHTML = list
+      .map((s) => {
+        const rate = s.success_rate || 0;
+        const col =
+          rate >= 70
+            ? "var(--accent)"
+            : rate >= 40
+              ? "var(--gold)"
+              : "var(--warn)";
+        return `<tr>
+      <td>
+        <div style="font-weight:600;font-size:0.75rem">${esc(s.judul)}</div>
+        <div style="font-size:0.6rem;color:var(--muted)">${esc(s.kategori)}</div>
+      </td>
+      <td><span class="bdg bdg-${s.level}">${s.level}</span></td>
+      <td style="color:var(--muted)">${s.total_attempt}</td>
+      <td>
+        <div class="prog-wrap">
+          <div class="prog-track">
+            <div style="height:100%;width:${rate}%;background:${col};border-radius:3px;transition:width 1s ease"></div>
+          </div>
+          <span class="prog-val" style="color:${col}">${rate}%</span>
+        </div>
+      </td>
+    </tr>`;
+      })
+      .join("");
+  }
+
+  // ── Hardest Soal ──────────────────────────────────────
+  function renderHardSoal(list) {
+    const tbody = document.getElementById("hard-soal-body");
+    if (!list || !list.length) {
+      tbody.innerHTML =
+        '<tr><td colspan="4"><div class="empty"><div class="empty-icon">🎉</div>Semua soal mudah!</div></td></tr>';
+      return;
+    }
+    tbody.innerHTML = list
+      .map((s) => {
+        const rate = s.success_rate || 0;
+        return `<tr>
+      <td>
+        <div style="font-weight:600;font-size:0.75rem">${esc(s.judul)}</div>
+      </td>
+      <td><span class="bdg bdg-${s.level}">${s.level}</span></td>
+      <td style="color:var(--muted)">${s.total_attempt}</td>
+      <td>
+        <div class="prog-wrap">
+          <div class="prog-track">
+            <div style="height:100%;width:${rate}%;background:var(--red);border-radius:3px;transition:width 1s ease"></div>
+          </div>
+          <span class="prog-val" style="color:var(--red)">${rate}%</span>
+        </div>
+      </td>
+    </tr>`;
+      })
+      .join("");
+  }
+
+  // ── Challenge Pending ─────────────────────────────────
+  function renderPending(list) {
+    const el = document.getElementById("pending-wrap");
+    if (!list || !list.length) {
+      el.innerHTML =
+        '<div class="empty"><div class="empty-icon">✅</div>Tidak ada challenge pending</div>';
+      return;
+    }
+    el.innerHTML = list
+      .map((c) => {
+        const d = c.created_at
+          ? new Date(c.created_at).toLocaleDateString("id-ID")
+          : "—";
+        return `<div class="pending-item">
+      <div class="pending-dot"></div>
+      <div style="flex:1;min-width:0">
+        <div class="pending-title">${esc(c.judul)}</div>
+        <div class="pending-meta">
+          Oleh: ${esc(c.nama_mahasiswa)} (${esc(c.nim)})
+          &bull; <span class="bdg bdg-${c.level}">${c.level}</span>
+          &bull; ${d}
+        </div>
+      </div>
+      <div class="pending-actions">
+        <button class="qz-btn qz-btn-ok" onclick="approveChallenge(${c.id_challenge}, this)">
+          <i class="fas fa-check"></i>
+        </button>
+        <button class="qz-btn qz-btn-rej" onclick="rejectChallenge(${c.id_challenge}, this)">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </div>`;
+      })
+      .join("");
+  }
+
+  // ── Activity Feed ─────────────────────────────────────
+  function renderFeed(list) {
+    const el = document.getElementById("feed-wrap");
+    if (!list || !list.length) {
+      el.innerHTML =
+        '<div class="empty"><div class="empty-icon">📭</div>Belum ada aktivitas</div>';
+      return;
+    }
+    const langCls = {
+      php: "bdg-php",
+      javascript: "bdg-js",
+      python: "bdg-python",
+    };
+    el.innerHTML = list
+      .map((a) => {
+        const t = a.updated_at
+          ? new Date(a.updated_at).toLocaleTimeString("id-ID", {
+              hour: "2-digit",
+              minute: "2-digit",
+            })
+          : "";
+        const d = a.updated_at
+          ? new Date(a.updated_at).toLocaleDateString("id-ID", {
+              day: "numeric",
+              month: "short",
+            })
+          : "";
+        return `<div class="feed-item">
+      <div class="feed-dot ${a.is_correct ? "ok" : "fail"}"></div>
+      <div style="flex:1;min-width:0">
+        <div class="feed-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(a.nama_mahasiswa)}</div>
+        <div class="feed-soal">${esc(a.soal_judul)} &bull; <span class="bdg ${langCls[a.bahasa] || ""}">${a.bahasa}</span></div>
+      </div>
+      <div class="feed-right">
+        <div class="feed-time">${d} ${t}</div>
+        <div style="font-size:0.62rem;margin-top:2px;color:${a.is_correct ? "var(--accent)" : "var(--warn)"}">
+          ${a.is_correct ? "✓ Solved" : `✗ Try ${a.attempt_count}`}
+        </div>
+      </div>
+    </div>`;
+      })
+      .join("");
+  }
+
+  // ── Challenge Actions ─────────────────────────────────
+  async function approveChallenge(id, btn) {
+    btn.disabled = true;
+    try {
+      const res = await fetch(`/admin/api/challenges/${id}/approve`, {
+        method: "POST",
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast("Challenge disetujui ✓", "ok");
+        loadDashboard();
+      } else toast(data.message || "Gagal.", "err");
+    } catch (e) {
+      toast("Gagal koneksi.", "err");
+    }
+    btn.disabled = false;
+  }
+
+  async function rejectChallenge(id, btn) {
+    const reason = prompt("Alasan penolakan (opsional):") ?? "";
+    if (reason === null) return;
+    btn.disabled = true;
+    try {
+      const res = await fetch(`/admin/api/challenges/${id}/reject`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast("Challenge ditolak.", "ok");
+        loadDashboard();
+      } else toast(data.message || "Gagal.", "err");
+    } catch (e) {
+      toast("Gagal koneksi.", "err");
+    }
+    btn.disabled = false;
+  }
+
+  // ── Utils ─────────────────────────────────────────────
+  function fmt(n) {
+    return (n || 0).toLocaleString("id-ID");
+  }
+  function esc(s) {
+    return (s || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+  }
+
+  function toast(msg, type = "ok") {
+    const wrap = document.getElementById("toast-wrap");
+    const el = document.createElement("div");
+    const icon = type === "ok" ? "check-circle" : "exclamation-circle";
+    const col = type === "ok" ? "var(--accent)" : "var(--red)";
+    el.className = `qz-toast ${type}`;
+    el.innerHTML = `<i class="fas fa-${icon}" style="color:${col};flex-shrink:0"></i> ${msg}`;
+    wrap.appendChild(el);
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => el.classList.add("show")),
+    );
+    setTimeout(() => {
+      el.classList.remove("show");
+      setTimeout(() => el.remove(), 400);
+    }, 3000);
+  }
+</script>
+{% endblock %}

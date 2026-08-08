@@ -1,0 +1,151 @@
+[
+  {
+    "id": 1,
+    "title": "Hello World",
+    "description": "Tampilkan teks **Hello World** ke layar.",
+    "category": "basic",
+    "level": "easy",
+    "languages": ["php", "javascript", "python"],
+    "expected_output": "Hello World",
+    "hints": [
+      "Gunakan fungsi print / echo / console.log",
+      "Perhatikan huruf kapital dan spasi"
+    ],
+    "starter_code": {
+      "php": "<?php\n// Tulis kode kamu di sini\n",
+      "javascript": "// Tulis kode kamu di sini\n",
+      "python": "# Tulis kode kamu di sini\n"
+    }
+  },
+  {
+    "id": 2,
+    "title": "Penjumlahan Dua Angka",
+    "description": "Tampilkan hasil penjumlahan dari **15 + 27**.",
+    "category": "basic",
+    "level": "easy",
+    "languages": ["php", "javascript", "python"],
+    "expected_output": "42",
+    "hints": [
+      "Gunakan operator + untuk menjumlahkan",
+      "Hasil akhir harus angka 42"
+    ],
+    "starter_code": {
+      "php": "<?php\n$a = 15;\n$b = 27;\n// Tampilkan hasil penjumlahan\n",
+      "javascript": "let a = 15;\nlet b = 27;\n// Tampilkan hasil penjumlahan\n",
+      "python": "a = 15\nb = 27\n# Tampilkan hasil penjumlahan\n"
+    }
+  },
+  {
+    "id": 3,
+    "title": "FizzBuzz",
+    "description": "Tampilkan angka **1 sampai 15**. Tapi:\n- Jika kelipatan 3, tampilkan `Fizz`\n- Jika kelipatan 5, tampilkan `Buzz`\n- Jika kelipatan 3 dan 5, tampilkan `FizzBuzz`",
+    "category": "loop",
+    "level": "medium",
+    "languages": ["php", "javascript", "python"],
+    "expected_output": "1\n2\nFizz\n4\nBuzz\nFizz\n7\n8\nFizz\nBuzz\n11\nFizz\n13\n14\nFizzBuzz",
+    "hints": [
+      "Gunakan loop for dari 1 sampai 15",
+      "Gunakan operator modulo (%) untuk cek kelipatan",
+      "Cek FizzBuzz dulu sebelum Fizz dan Buzz"
+    ],
+    "starter_code": {
+      "php": "<?php\nfor ($i = 1; $i <= 15; $i++) {\n    // Tulis logika FizzBuzz\n}\n",
+      "javascript": "for (let i = 1; i <= 15; i++) {\n    // Tulis logika FizzBuzz\n}\n",
+      "python": "for i in range(1, 16):\n    # Tulis logika FizzBuzz\n    pass\n"
+    }
+  },
+  {
+    "id": 4,
+    "title": "Balik String",
+    "description": "Balikkan string `'Hello'` dan tampilkan hasilnya.",
+    "category": "string",
+    "level": "medium",
+    "languages": ["php", "javascript", "python"],
+    "expected_output": "olleH",
+    "hints": [
+      "PHP: gunakan fungsi strrev()",
+      "JavaScript: split('').reverse().join('')",
+      "Python: gunakan slicing [::-1]"
+    ],
+    "starter_code": {
+      "php": "<?php\n$str = 'Hello';\n// Balikkan dan tampilkan string\n",
+      "javascript": "let str = 'Hello';\n// Balikkan dan tampilkan string\n",
+      "python": "str = 'Hello'\n# Balikkan dan tampilkan string\n"
+    }
+  },
+  {
+    "id": 5,
+    "title": "Faktorial",
+    "description": "Hitung dan tampilkan hasil **faktorial dari 6** (6!).",
+    "category": "math",
+    "level": "medium",
+    "languages": ["php", "javascript", "python"],
+    "expected_output": "720",
+    "hints": [
+      "Faktorial: n! = n × (n-1) × ... × 1",
+      "Bisa pakai loop atau rekursi",
+      "6! = 6 × 5 × 4 × 3 × 2 × 1 = 720"
+    ],
+    "starter_code": {
+      "php": "<?php\n$n = 6;\n$result = 1;\n// Hitung faktorial\necho $result;\n",
+      "javascript": "let n = 6;\nlet result = 1;\n// Hitung faktorial\nconsole.log(result);\n",
+      "python": "n = 6\nresult = 1\n# Hitung faktorial\nprint(result)\n"
+    }
+  },
+  {
+    "id": 6,
+    "title": "Cek Bilangan Prima",
+    "description": "Cek apakah angka **17** adalah bilangan prima. Tampilkan `Prima` jika iya, `Bukan Prima` jika tidak.",
+    "category": "math",
+    "level": "hard",
+    "languages": ["php", "javascript", "python"],
+    "expected_output": "Prima",
+    "hints": [
+      "Bilangan prima hanya bisa dibagi 1 dan dirinya sendiri",
+      "Loop dari 2 sampai sqrt(n) untuk efisiensi",
+      "Gunakan modulo (%) untuk cek pembagian"
+    ],
+    "starter_code": {
+      "php": "<?php\n$n = 17;\n$isPrime = true;\n// Tulis logika cek prima\necho $isPrime ? 'Prima' : 'Bukan Prima';\n",
+      "javascript": "let n = 17;\nlet isPrime = true;\n// Tulis logika cek prima\nconsole.log(isPrime ? 'Prima' : 'Bukan Prima');\n",
+      "python": "n = 17\nis_prime = True\n# Tulis logika cek prima\nprint('Prima' if is_prime else 'Bukan Prima')\n"
+    }
+  },
+  {
+    "id": 7,
+    "title": "Jumlah Elemen Array",
+    "description": "Hitung total jumlah semua elemen dalam array `[3, 7, 12, 5, 8]`.",
+    "category": "array",
+    "level": "easy",
+    "languages": ["php", "javascript", "python"],
+    "expected_output": "35",
+    "hints": [
+      "Gunakan loop untuk iterasi array",
+      "PHP: array_sum(), JS: reduce(), Python: sum()"
+    ],
+    "starter_code": {
+      "php": "<?php\n$arr = [3, 7, 12, 5, 8];\n// Hitung dan tampilkan total\n",
+      "javascript": "let arr = [3, 7, 12, 5, 8];\n// Hitung dan tampilkan total\n",
+      "python": "arr = [3, 7, 12, 5, 8]\n# Hitung dan tampilkan total\n"
+    }
+  },
+  {
+    "id": 8,
+    "title": "Fibonacci",
+    "description": "Tampilkan **10 angka pertama** deret Fibonacci, tiap angka di baris baru.\nDeret dimulai: 0, 1, 1, 2, 3, ...",
+    "category": "loop",
+    "level": "hard",
+    "languages": ["php", "javascript", "python"],
+    "expected_output": "0\n1\n1\n2\n3\n5\n8\n13\n21\n34",
+    "hints": [
+      "Fibonacci: angka berikutnya = jumlah dua angka sebelumnya",
+      "Mulai dengan a=0, b=1",
+      "Lakukan 10 iterasi"
+    ],
+    "starter_code": {
+      "php": "<?php\n$a = 0;\n$b = 1;\nfor ($i = 0; $i < 10; $i++) {\n    // Tampilkan dan hitung berikutnya\n}\n",
+      "javascript": "let a = 0, b = 1;\nfor (let i = 0; i < 10; i++) {\n    // Tampilkan dan hitung berikutnya\n}\n",
+      "python": "a, b = 0, 1\nfor i in range(10):\n    # Tampilkan dan hitung berikutnya\n    pass\n"
+    }
+  }
+]

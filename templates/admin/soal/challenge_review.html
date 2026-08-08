@@ -1,0 +1,558 @@
+{% extends "layout/templates.html" %}
+{% block body_class %}ch-review-page{% endblock %}
+
+{% block css %}
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600,700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0a0a0f; --surf:#111118; --surf2:#1a1a24; --surf3:#22222e;
+  --border:#2a2a3a; --accent:#00ff88; --warn:#ff6b35; --info:#38bdf8;
+  --gold:#fbbf24; --red:#f87171; --purple:#a78bfa;
+  --text:#e2e2f0; --muted:#6b6b8a;
+}
+.ch-review-page .content-wrapper { background:var(--bg) !important; }
+.ch-review-page .content         { padding:1.5rem !important; }
+.ch-review-page .content-header  { background:var(--surf) !important; border-bottom:1px solid var(--border); }
+.ch-review-page .content-header h1 { font-family:'Syne',sans-serif; font-size:1.3rem; font-weight:800; color:var(--text); }
+.ch-review-page .breadcrumb-item a { color:var(--accent); }
+.ch-review-page .breadcrumb-item.active { color:var(--muted); }
+*,*::before,*::after { box-sizing:border-box; }
+
+/* Stat row */
+.stat-row { display:grid; grid-template-columns:repeat(5,1fr); gap:1rem; margin-bottom:1.4rem; }
+.stat-card {
+  background:var(--surf); border:1px solid var(--border); border-radius:10px;
+  padding:0.9rem 1.1rem; display:flex; align-items:center; gap:0.8rem;
+  transition:border-color 0.2s;
+}
+.stat-card:hover { border-color:var(--accent); }
+.stat-icon { font-size:1.6rem; }
+.stat-val  { font-family:'Syne',sans-serif; font-size:1.5rem; font-weight:800; color:var(--text); line-height:1; }
+.stat-lbl  { font-family:'JetBrains Mono',monospace; font-size:0.58rem; color:var(--muted); text-transform:uppercase; letter-spacing:1.5px; margin-top:2px; }
+
+/* Layout */
+.review-layout { display:grid; grid-template-columns:1fr 400px; gap:1.2rem; align-items:start; }
+
+/* Card */
+.qz-card { background:var(--surf); border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+.qz-card-header {
+  padding:0.85rem 1.2rem; border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+  background:var(--surf2);
+}
+.qz-card-title { font-family:'Syne',sans-serif; font-size:0.9rem; font-weight:800; color:var(--text); }
+
+/* Tabs */
+.status-tabs { display:flex; gap:0.3rem; padding:0.8rem 1.2rem; border-bottom:1px solid var(--border); background:var(--surf2); flex-wrap:wrap; }
+.stab {
+  font-family:'JetBrains Mono',monospace; font-size:0.68rem; font-weight:700;
+  padding:0.3rem 0.8rem; border:1px solid var(--border); border-radius:5px;
+  background:transparent; color:var(--muted); cursor:pointer; transition:all 0.15s;
+  text-transform:uppercase; display:flex; align-items:center; gap:0.35rem;
+}
+.stab.active      { background:var(--accent); border-color:var(--accent); color:#000; }
+.stab .cnt {
+  font-size:0.6rem; background:rgba(0,0,0,0.2); padding:0 0.35rem;
+  border-radius:8px; line-height:1.4;
+}
+.stab.active .cnt { background:rgba(0,0,0,0.25); }
+
+/* Challenge list */
+.ch-list { overflow-y:auto; max-height:620px; }
+.ch-item {
+  padding:1rem 1.2rem; border-bottom:1px solid var(--border);
+  cursor:pointer; transition:background 0.12s; display:flex; gap:1rem;
+}
+.ch-item:last-child { border-bottom:none; }
+.ch-item:hover    { background:rgba(255,255,255,0.02); }
+.ch-item.selected { background:rgba(0,255,136,0.05); border-left:3px solid var(--accent); }
+.ch-item-body { flex:1; min-width:0; }
+.ch-item-title {
+  font-family:'Syne',sans-serif; font-size:0.88rem; font-weight:800;
+  color:var(--text); margin-bottom:3px;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.ch-item-meta { font-family:'JetBrains Mono',monospace; font-size:0.65rem; color:var(--muted); }
+.ch-item-meta strong { color:var(--text); }
+.ch-item-badges { display:flex; gap:0.4rem; margin-top:0.4rem; flex-wrap:wrap; }
+.ch-item-actions { display:flex; flex-direction:column; gap:0.4rem; align-items:flex-end; justify-content:center; flex-shrink:0; }
+
+/* Detail panel */
+.detail-panel { position:sticky; top:70px; }
+.detail-body  { padding:1.2rem; overflow-y:auto; max-height:70vh; }
+.detail-empty {
+  text-align:center; padding:3rem 1rem;
+  font-family:'JetBrains Mono',monospace; font-size:0.8rem; color:var(--muted);
+}
+.detail-empty-icon { font-size:2.5rem; opacity:0.25; margin-bottom:0.7rem; }
+
+.detail-title { font-family:'Syne',sans-serif; font-size:1.1rem; font-weight:800; color:var(--text); margin-bottom:0.5rem; }
+.detail-section { margin-bottom:1.1rem; }
+.detail-lbl {
+  font-family:'JetBrains Mono',monospace; font-size:0.58rem;
+  letter-spacing:2px; text-transform:uppercase; color:var(--muted); margin-bottom:0.35rem;
+}
+.detail-val { font-family:'JetBrains Mono',monospace; font-size:0.78rem; color:var(--text); line-height:1.65; }
+.detail-val code { background:var(--surf2); border:1px solid var(--border); padding:.1em .4em; border-radius:4px; color:var(--accent); }
+
+.expected-box {
+  background:#0d0d14; border:1px solid var(--border); border-radius:7px;
+  padding:0.75rem 1rem;
+}
+.expected-box pre { margin:0; font-family:'JetBrains Mono',monospace; font-size:0.78rem; color:var(--accent); white-space:pre-wrap; }
+
+.starter-tabs { display:flex; gap:0.3rem; margin-bottom:0.5rem; }
+.starter-tab {
+  font-family:'JetBrains Mono',monospace; font-size:0.65rem; font-weight:700;
+  padding:0.2rem 0.6rem; border:1px solid var(--border); border-radius:4px;
+  background:transparent; color:var(--muted); cursor:pointer; transition:all 0.15s;
+}
+.starter-tab.active { background:var(--accent); border-color:var(--accent); color:#000; }
+.starter-pane { display:none; }
+.starter-pane.active { display:block; }
+.code-preview {
+  background:#0d0d14; border:1px solid var(--border); border-radius:7px;
+  padding:0.75rem 1rem; max-height:180px; overflow-y:auto;
+}
+.code-preview pre { margin:0; font-family:'JetBrains Mono',monospace; font-size:0.75rem; color:#e2e2f0; white-space:pre-wrap; }
+
+/* Action buttons */
+.action-row {
+  padding:1rem 1.2rem; border-top:1px solid var(--border);
+  display:flex; gap:0.7rem; background:var(--surf2);
+}
+.qz-btn {
+  font-family:'JetBrains Mono',monospace; font-size:0.73rem; font-weight:700;
+  padding:0.5rem 1rem; border-radius:6px; border:none; cursor:pointer;
+  transition:all 0.15s; text-transform:uppercase; letter-spacing:0.5px;
+  display:inline-flex; align-items:center; gap:0.35rem; flex:1; justify-content:center;
+}
+.qz-btn:disabled { opacity:0.5; cursor:not-allowed; }
+.btn-ok  { background:var(--accent); color:#000; }
+.btn-ok:hover:not(:disabled)  { background:#00e07a; }
+.btn-rej { background:rgba(248,113,113,0.1); border:1px solid rgba(248,113,113,0.3); color:var(--red); }
+.btn-rej:hover:not(:disabled) { background:rgba(248,113,113,0.2); }
+.btn-outline { background:transparent; border:1px solid var(--border); color:var(--muted); flex:0; padding:0.5rem 0.8rem; }
+.btn-outline:hover { border-color:var(--accent); color:var(--accent); }
+
+/* Badges */
+.bdg { display:inline-block; font-family:'JetBrains Mono',monospace; font-size:0.55rem; font-weight:700; padding:0.1rem 0.4rem; border-radius:4px; text-transform:uppercase; letter-spacing:0.5px; }
+.bdg-easy    { background:rgba(0,255,136,0.12); color:#00ff88; }
+.bdg-medium  { background:rgba(255,190,11,0.12); color:#ffbe0b; }
+.bdg-hard    { background:rgba(255,107,53,0.12); color:#ff6b35; }
+.bdg-pending { background:rgba(251,191,36,0.12); color:#fbbf24; }
+.bdg-approved{ background:rgba(0,255,136,0.12); color:#00ff88; }
+.bdg-rejected{ background:rgba(248,113,113,0.12);color:#f87171; }
+.bdg-expired { background:rgba(107,107,138,0.15);color:#6b6b8a; }
+
+/* Reject modal */
+.qz-modal-bg {
+  position:fixed; inset:0; background:rgba(0,0,0,0.75); backdrop-filter:blur(5px);
+  z-index:1055; display:none; align-items:center; justify-content:center; padding:1rem;
+}
+.qz-modal-bg.show { display:flex; }
+.qz-modal {
+  background:var(--surf); border:1px solid var(--border); border-radius:12px;
+  width:100%; max-width:480px; animation:mIn 0.2s ease;
+}
+@keyframes mIn { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:none} }
+.qz-modal-hd { padding:1.1rem 1.4rem; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+.qz-modal-title { font-family:'Syne',sans-serif; font-size:1rem; font-weight:800; color:var(--text); }
+.m-close { background:none; border:none; color:var(--muted); cursor:pointer; font-size:1.1rem; }
+.m-close:hover { color:var(--warn); }
+.qz-modal-bd { padding:1.2rem; }
+.qz-modal-ft { padding:1rem 1.2rem; border-top:1px solid var(--border); display:flex; justify-content:flex-end; gap:0.6rem; }
+.form-ctrl {
+  width:100%; background:var(--surf2); border:1px solid var(--border); border-radius:7px;
+  padding:0.55rem 0.85rem; color:var(--text); font-family:'JetBrains Mono',monospace;
+  font-size:0.8rem; outline:none; transition:border-color 0.15s;
+}
+.form-ctrl:focus { border-color:var(--warn); }
+.form-label { display:block; font-family:'JetBrains Mono',monospace; font-size:0.62rem; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); margin-bottom:0.35rem; }
+
+/* Empty */
+.empty { text-align:center; padding:2.5rem; font-family:'JetBrains Mono',monospace; font-size:0.78rem; color:var(--muted); }
+.empty-icon { font-size:2rem; opacity:0.25; margin-bottom:0.5rem; }
+
+/* Toast */
+.toast-wrap { position:fixed; bottom:1.5rem; right:1.5rem; z-index:9999; display:flex; flex-direction:column; gap:0.5rem; }
+.qz-toast {
+  background:var(--surf); border:1px solid var(--border); border-radius:8px;
+  padding:0.7rem 1rem; font-family:'JetBrains Mono',monospace; font-size:0.78rem; color:var(--text);
+  display:flex; align-items:center; gap:0.5rem;
+  box-shadow:0 8px 24px rgba(0,0,0,.4);
+  transform:translateX(120%); opacity:0; transition:all 0.3s ease; max-width:300px;
+}
+.qz-toast.show { transform:none; opacity:1; }
+.qz-toast.ok  { border-color:rgba(0,255,136,0.35); }
+.qz-toast.err { border-color:rgba(248,113,113,0.35); }
+
+@media(max-width:992px) {
+  .review-layout { grid-template-columns:1fr; }
+  .stat-row { grid-template-columns:1fr 1fr; }
+  .detail-panel { position:static; }
+}
+@media(max-width:576px) {
+  .stat-row { grid-template-columns:1fr 1fr; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Stat row -->
+<div class="stat-row">
+  <div class="stat-card"><div class="stat-icon">⏳</div><div><div class="stat-val" id="s-pending">—</div><div class="stat-lbl">Pending</div></div></div>
+  <div class="stat-card"><div class="stat-icon">✅</div><div><div class="stat-val" id="s-approved">—</div><div class="stat-lbl">Approved</div></div></div>
+  <div class="stat-card"><div class="stat-icon">❌</div><div><div class="stat-val" id="s-rejected">—</div><div class="stat-lbl">Rejected</div></div></div>
+  <div class="stat-card"><div class="stat-icon">⌛</div><div><div class="stat-val" id="s-expired">—</div><div class="stat-lbl">Expired</div></div></div>
+  <div class="stat-card"><div class="stat-icon">📋</div><div><div class="stat-val" id="s-total">—</div><div class="stat-lbl">Total</div></div></div>
+</div>
+
+<div class="review-layout">
+
+  <!-- Kiri: list -->
+  <div class="qz-card">
+    <div class="qz-card-header">
+      <span class="qz-card-title">Daftar Challenge</span>
+      <button class="qz-btn btn-outline" onclick="expireOld()" title="Proses challenge expired">
+        <i class="fas fa-sync-alt"></i>
+      </button>
+    </div>
+
+    <div class="status-tabs">
+      <button class="stab active" data-s="pending"  onclick="switchStatus('pending')">
+        Pending <span class="cnt" id="cnt-pending">0</span>
+      </button>
+      <button class="stab" data-s="approved" onclick="switchStatus('approved')">
+        Approved <span class="cnt" id="cnt-approved">0</span>
+      </button>
+      <button class="stab" data-s="rejected" onclick="switchStatus('rejected')">
+        Rejected <span class="cnt" id="cnt-rejected">0</span>
+      </button>
+      <button class="stab" data-s="expired"  onclick="switchStatus('expired')">
+        Expired <span class="cnt" id="cnt-expired">0</span>
+      </button>
+    </div>
+
+    <div class="ch-list" id="ch-list">
+      <div class="empty"><div class="empty-icon">⏳</div>Memuat...</div>
+    </div>
+  </div>
+
+  <!-- Kanan: detail panel -->
+  <div class="qz-card detail-panel">
+    <div class="qz-card-header">
+      <span class="qz-card-title">Detail Challenge</span>
+    </div>
+
+    <div id="detail-body">
+      <div class="detail-empty">
+        <div class="detail-empty-icon">👈</div>
+        Pilih challenge untuk melihat detail
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- Reject modal -->
+<div class="qz-modal-bg" id="reject-modal">
+  <div class="qz-modal">
+    <div class="qz-modal-hd">
+      <span class="qz-modal-title">❌ Tolak Challenge</span>
+      <button class="m-close" onclick="closeRejectModal()">✕</button>
+    </div>
+    <div class="qz-modal-bd">
+      <label class="form-label">Alasan Penolakan</label>
+      <textarea class="form-ctrl" id="reject-reason" rows="3"
+        placeholder="Tulis alasan penolakan yang jelas..."></textarea>
+    </div>
+    <div class="qz-modal-ft">
+      <button class="qz-btn btn-outline" style="flex:0;padding:0.45rem 0.9rem" onclick="closeRejectModal()">Batal</button>
+      <button class="qz-btn btn-rej" style="flex:0" onclick="confirmReject()">
+        <i class="fas fa-times"></i> Tolak
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toast-wrap"></div>
+{% endblock %}
+
+{% block js %}
+<script>
+let allData      = {};
+let currentStatus = 'pending';
+let selectedId   = null;
+let rejectingId  = null;
+let starterLang  = 'php';
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadStats();
+  loadList('pending');
+});
+
+// ─── Stats ────────────────────────────────────────────
+async function loadStats() {
+  try {
+    const res  = await fetch('/api/admin/challenges/stats');
+    const data = await res.json();
+    document.getElementById('s-pending').textContent  = data.pending  || 0;
+    document.getElementById('s-approved').textContent = data.approved || 0;
+    document.getElementById('s-rejected').textContent = data.rejected || 0;
+    document.getElementById('s-expired').textContent  = data.expired  || 0;
+    document.getElementById('s-total').textContent    = data.total    || 0;
+    document.getElementById('cnt-pending').textContent  = data.pending  || 0;
+    document.getElementById('cnt-approved').textContent = data.approved || 0;
+    document.getElementById('cnt-rejected').textContent = data.rejected || 0;
+    document.getElementById('cnt-expired').textContent  = data.expired  || 0;
+  } catch(e) {}
+}
+
+// ─── Load list ────────────────────────────────────────
+async function loadList(status) {
+  currentStatus = status;
+  const el = document.getElementById('ch-list');
+  el.innerHTML = '<div class="empty"><div class="empty-icon">⏳</div>Memuat...</div>';
+
+  try {
+    const res  = await fetch(`/api/admin/challenges?status=${status}`);
+    const data = await res.json();
+    allData[status] = data.challenges || [];
+    renderList(allData[status]);
+  } catch(e) { el.innerHTML = '<div class="empty">Gagal memuat data.</div>'; }
+}
+
+function switchStatus(status) {
+  document.querySelectorAll('.stab').forEach(b => b.classList.toggle('active', b.dataset.s===status));
+  selectedId = null;
+  document.getElementById('detail-body').innerHTML = `
+    <div class="detail-empty">
+      <div class="detail-empty-icon">👈</div>Pilih challenge untuk melihat detail
+    </div>`;
+  if (allData[status]) renderList(allData[status]);
+  else loadList(status);
+}
+
+function renderList(list) {
+  const el = document.getElementById('ch-list');
+  if (!list.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">📭</div>Tidak ada challenge</div>`;
+    return;
+  }
+
+  el.innerHTML = list.map(c => {
+    const d = c.created_at ? new Date(c.created_at).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}) : '—';
+    return `<div class="ch-item${selectedId===c.id_challenge?' selected':''}"
+                 id="item-${c.id_challenge}" onclick="selectChallenge(${c.id_challenge})">
+      <div class="ch-item-body">
+        <div class="ch-item-title">${esc(c.judul)}</div>
+        <div class="ch-item-meta">
+          Oleh: <strong>${esc(c.creator_name)}</strong> (${esc(c.creator_nim)}) · ${d}
+        </div>
+        <div class="ch-item-badges">
+          <span class="bdg bdg-${c.level}">${c.level}</span>
+          <span class="bdg bdg-${c.status}">${c.status}</span>
+          ${c.downvote_count>0 ? `<span class="bdg" style="background:rgba(248,113,113,.1);color:#f87171">👎 ${c.downvote_count}</span>` : ''}
+          ${c.total_solvers>0  ? `<span class="bdg" style="background:rgba(0,255,136,.1);color:#00ff88">✓ ${c.total_solvers}</span>` : ''}
+        </div>
+      </div>
+      ${c.status==='pending' ? `
+      <div class="ch-item-actions">
+        <button class="qz-btn btn-ok"  style="flex:0;font-size:.62rem;padding:.25rem .6rem" onclick="event.stopPropagation();approveChallenge(${c.id_challenge})">
+          <i class="fas fa-check"></i>
+        </button>
+        <button class="qz-btn btn-rej" style="flex:0;font-size:.62rem;padding:.25rem .6rem" onclick="event.stopPropagation();openRejectModal(${c.id_challenge})">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+// ─── Select & Detail ──────────────────────────────────
+async function selectChallenge(id) {
+  selectedId = id;
+  document.querySelectorAll('.ch-item').forEach(el => el.classList.remove('selected'));
+  document.getElementById(`item-${id}`)?.classList.add('selected');
+
+  document.getElementById('detail-body').innerHTML =
+    '<div class="detail-empty"><div class="empty-icon">⏳</div>Memuat detail...</div>';
+
+  try {
+    const res  = await fetch(`/api/admin/challenges/${id}`);
+    const data = await res.json();
+    renderDetail(data);
+  } catch(e) {
+    document.getElementById('detail-body').innerHTML =
+      '<div class="detail-empty">Gagal memuat detail.</div>';
+  }
+}
+
+function renderDetail(c) {
+  const desc = (c.deskripsi||'')
+    .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+    .replace(/`(.*?)`/g,'<code>$1</code>')
+    .replace(/\n/g,'<br>');
+
+  const reviewedAt = c.reviewed_at
+    ? new Date(c.reviewed_at).toLocaleString('id-ID') : null;
+  const expiresAt  = c.expires_at
+    ? new Date(c.expires_at).toLocaleString('id-ID') : null;
+  const createdAt  = c.created_at
+    ? new Date(c.created_at).toLocaleString('id-ID') : '—';
+
+  // Build starter code section
+  const sc      = c.starter_code || {};
+  const scLangs = Object.keys(sc).filter(l => sc[l]);
+  const scTabs  = scLangs.map(l =>
+    `<button class="starter-tab${l===starterLang?' active':''}" onclick="switchStarterTab('${l}')">${l.toUpperCase()}</button>`
+  ).join('');
+  const scPanes = scLangs.map(l =>
+    `<div class="starter-pane${l===starterLang?' active':''}" id="sp-${l}">
+      <div class="code-preview"><pre>${esc(sc[l]||'')}</pre></div>
+    </div>`
+  ).join('');
+
+  document.getElementById('detail-body').innerHTML = `
+    <div class="detail-body">
+
+      <div class="detail-section">
+        <div class="detail-title">${esc(c.judul)}</div>
+        <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.7rem">
+          <span class="bdg bdg-${c.level}">${c.level}</span>
+          <span class="bdg bdg-${c.status}">${c.status}</span>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <div class="detail-lbl">Pembuat</div>
+        <div class="detail-val">
+          <strong>${esc(c.creator_name||'—')}</strong>
+          <span style="color:var(--muted)"> · ${esc(c.creator_nim||'')}</span>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <div class="detail-lbl">Deskripsi</div>
+        <div class="detail-val">${desc}</div>
+      </div>
+
+      <div class="detail-section">
+        <div class="detail-lbl">Expected Output</div>
+        <div class="expected-box"><pre>${esc(c.expected_output||'—')}</pre></div>
+      </div>
+
+      ${scLangs.length ? `
+      <div class="detail-section">
+        <div class="detail-lbl">Starter Code</div>
+        <div class="starter-tabs">${scTabs}</div>
+        ${scPanes}
+      </div>` : ''}
+
+      <div class="detail-section">
+        <div class="detail-lbl">Info</div>
+        <div class="detail-val" style="font-size:.7rem;line-height:2">
+          Disubmit: ${createdAt}<br>
+          Downvote: ${c.downvote_count||0}<br>
+          ${c.total_solvers!=null ? `Solvers: ${c.total_solvers}<br>` : ''}
+          ${expiresAt ? `Expires: ${expiresAt}<br>` : ''}
+          ${reviewedAt ? `Direview: ${reviewedAt}` : ''}
+        </div>
+      </div>
+
+      ${c.rejected_reason ? `
+      <div class="detail-section">
+        <div class="detail-lbl">Alasan Penolakan</div>
+        <div class="detail-val" style="color:var(--warn)">${esc(c.rejected_reason)}</div>
+      </div>` : ''}
+
+    </div>
+
+    ${c.status==='pending' ? `
+    <div class="action-row">
+      <button class="qz-btn btn-ok" onclick="approveChallenge(${c.id_challenge})">
+        <i class="fas fa-check"></i> Setujui
+      </button>
+      <button class="qz-btn btn-rej" onclick="openRejectModal(${c.id_challenge})">
+        <i class="fas fa-times"></i> Tolak
+      </button>
+    </div>` : ''}
+  `;
+}
+
+function switchStarterTab(lang) {
+  starterLang = lang;
+  document.querySelectorAll('.starter-tab').forEach(t => t.classList.toggle('active', t.textContent.toLowerCase()===lang));
+  document.querySelectorAll('.starter-pane').forEach(p => p.classList.remove('active'));
+  document.getElementById(`sp-${lang}`)?.classList.add('active');
+}
+
+// ─── Actions ──────────────────────────────────────────
+async function approveChallenge(id) {
+  if (!confirm('Setujui challenge ini? Challenge akan aktif selama 7 hari.')) return;
+  try {
+    const res  = await fetch(`/api/admin/challenges/${id}/approve`, {method:'POST'});
+    const data = await res.json();
+    if (data.success) { toast('Challenge disetujui ✓','ok'); reload(); }
+    else toast(data.message||'Gagal.','err');
+  } catch(e) { toast('Gagal koneksi.','err'); }
+}
+
+function openRejectModal(id) { rejectingId = id; document.getElementById('reject-modal').classList.add('show'); }
+function closeRejectModal()  { rejectingId = null; document.getElementById('reject-modal').classList.remove('show'); document.getElementById('reject-reason').value=''; }
+
+async function confirmReject() {
+  const reason = document.getElementById('reject-reason').value.trim();
+  if (!reason) { toast('Tulis alasan penolakan!','err'); return; }
+  try {
+    const res  = await fetch(`/api/admin/challenges/${rejectingId}/reject`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({reason})
+    });
+    const data = await res.json();
+    if (data.success) { toast('Challenge ditolak.','ok'); closeRejectModal(); reload(); }
+    else toast(data.message||'Gagal.','err');
+  } catch(e) { toast('Gagal koneksi.','err'); }
+}
+
+async function expireOld() {
+  try {
+    const res  = await fetch('/api/admin/challenges/expire', {method:'POST'});
+    const data = await res.json();
+    toast(`${data.expired_count} challenge diproses.`, 'ok');
+    reload();
+  } catch(e) { toast('Gagal.','err'); }
+}
+
+function reload() {
+  loadStats();
+  loadList(currentStatus);
+  selectedId = null;
+  document.getElementById('detail-body').innerHTML = `
+    <div class="detail-empty">
+      <div class="detail-empty-icon">👈</div>Pilih challenge untuk melihat detail
+    </div>`;
+}
+
+// ─── Utils ────────────────────────────────────────────
+function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function toast(msg, type='ok') {
+  const wrap = document.getElementById('toast-wrap');
+  const el   = document.createElement('div');
+  el.className = `qz-toast ${type}`;
+  el.innerHTML = `<i class="fas fa-${type==='ok'?'check-circle':'exclamation-circle'}"
+    style="color:${type==='ok'?'var(--accent)':'var(--warn)'};flex-shrink:0"></i> ${msg}`;
+  wrap.appendChild(el);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add('show')));
+  setTimeout(()=>{ el.classList.remove('show'); setTimeout(()=>el.remove(),400); },3000);
+}
+
+// Close modal on backdrop click
+document.getElementById('reject-modal').addEventListener('click', e => {
+  if (e.target===e.currentTarget) closeRejectModal();
+});
+</script>
+{% endblock %}

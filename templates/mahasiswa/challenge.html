@@ -1,0 +1,370 @@
+{% extends "layout/templates_mhs.html" %}
+{% block body_class %}challenge-page{% endblock %}
+{% block nav_challenge %}active{% endblock %}
+
+{% block css %}
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:     #0a0a0f; --surf:   #111118; --surf2:  #1a1a24;
+  --border: #2a2a3a; --accent: #00ff88; --warn:   #ff6b35;
+  --info:   #38bdf8; --gold:   #fbbf24; --purple: #a78bfa;
+  --text:   #e2e2f0; --muted:  #6b6b8a;
+}
+.challenge-page .content-wrapper { background: var(--bg) !important; }
+.challenge-page .content { padding: 1.5rem !important; }
+.challenge-page .content-header { background: var(--surf) !important; border-bottom: 1px solid var(--border); }
+.challenge-page .content-header h1 { font-family:'Syne',sans-serif; font-size:1.3rem; font-weight:800; color:var(--text); }
+.challenge-page .breadcrumb-item a { color:var(--accent); }
+.challenge-page .breadcrumb-item.active { color:var(--muted); }
+*, *::before, *::after { box-sizing:border-box; }
+
+/* Stat row */
+.stat-row { display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; margin-bottom:1.4rem; }
+.stat-card {
+  background:var(--surf); border:1px solid var(--border); border-radius:10px;
+  padding:1rem 1.2rem; display:flex; align-items:center; gap:1rem;
+  transition:border-color 0.2s, transform 0.15s;
+}
+.stat-card:hover { border-color:var(--accent); transform:translateY(-2px); }
+.stat-icon { font-size:1.8rem; }
+.stat-val  { font-family:'Syne',sans-serif; font-size:1.6rem; font-weight:800; color:var(--text); line-height:1; }
+.stat-lbl  { font-size:0.6rem; color:var(--muted); text-transform:uppercase; letter-spacing:1.5px; margin-top:3px; }
+
+/* Toolbar */
+.toolbar { display:flex; align-items:center; gap:0.7rem; margin-bottom:1.2rem; flex-wrap:wrap; }
+.search-bar {
+  background:var(--surf2); border:1px solid var(--border); border-radius:8px;
+  padding:0.5rem 0.9rem; color:var(--text);
+  font-family:'JetBrains Mono',monospace; font-size:0.78rem;
+  outline:none; width:240px; transition:border-color 0.15s;
+}
+.search-bar:focus { border-color:var(--accent); }
+.search-bar::placeholder { color:var(--muted); }
+.filter-sel {
+  background:var(--surf2); border:1px solid var(--border); border-radius:8px;
+  padding:0.5rem 0.7rem; color:var(--text);
+  font-family:'JetBrains Mono',monospace; font-size:0.75rem;
+  outline:none; cursor:pointer;
+}
+.filter-sel:focus { border-color:var(--accent); }
+
+/* Buttons */
+.qz-btn {
+  font-family:'JetBrains Mono',monospace; font-size:0.75rem; font-weight:700;
+  padding:0.45rem 1.1rem; border-radius:7px; border:none; cursor:pointer;
+  transition:all 0.15s; text-transform:uppercase; letter-spacing:0.5px;
+  display:inline-flex; align-items:center; gap:0.4rem;
+}
+.qz-btn-primary { background:var(--accent); color:#000; }
+.qz-btn-primary:hover { background:#00e07a; transform:translateY(-1px); box-shadow:0 4px 14px rgba(0,255,136,.25); }
+.qz-btn-outline { background:transparent; border:1px solid var(--border); color:var(--muted); }
+.qz-btn-outline:hover { border-color:var(--accent); color:var(--accent); }
+
+/* Tabs */
+.tabs { display:flex; gap:0.3rem; margin-bottom:1.2rem; }
+.tab-btn {
+  font-family:'JetBrains Mono',monospace; font-size:0.72rem; font-weight:700;
+  padding:0.4rem 1rem; border-radius:6px;
+  border:1px solid var(--border); background:transparent;
+  color:var(--muted); cursor:pointer; transition:all 0.15s; text-transform:uppercase;
+}
+.tab-btn.active { background:var(--accent); border-color:var(--accent); color:#000; }
+.tab-btn .badge {
+  display:inline-block; background:rgba(0,0,0,0.2); border-radius:10px;
+  padding:0 0.4rem; font-size:0.6rem; margin-left:0.3rem;
+}
+.tab-btn.active .badge { background:rgba(0,0,0,0.25); }
+
+/* Challenge grid */
+.ch-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1rem;
+}
+.ch-card {
+  background:var(--surf); border:1px solid var(--border); border-radius:12px;
+  padding:1.2rem; display:flex; flex-direction:column; gap:0.8rem;
+  transition:border-color 0.2s, transform 0.15s; position:relative; overflow:hidden;
+  cursor:pointer;
+}
+.ch-card:hover { border-color:var(--accent); transform:translateY(-3px); box-shadow:0 8px 24px rgba(0,255,136,0.08); }
+.ch-card.is-mine { border-color:rgba(167,139,250,0.4); cursor:default; }
+.ch-card.is-mine:hover { border-color:rgba(167,139,250,0.6); transform:none; box-shadow:none; }
+.ch-card.solved { border-color:rgba(0,255,136,0.3); }
+.ch-card-glow {
+  position:absolute; top:0; right:0; width:80px; height:80px;
+  border-radius:0 12px 0 80px; opacity:0.06; pointer-events:none;
+}
+.ch-title {
+  font-family:'Syne',sans-serif; font-size:1rem; font-weight:800;
+  color:var(--text); line-height:1.3;
+}
+.ch-desc {
+  font-family:'JetBrains Mono',monospace; font-size:0.75rem;
+  color:var(--muted); line-height:1.6;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+}
+.ch-meta { display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center; }
+.ch-footer {
+  display:flex; align-items:center; justify-content:space-between;
+  padding-top:0.8rem; border-top:1px solid var(--border);
+}
+.ch-creator { font-family:'JetBrains Mono',monospace; font-size:0.65rem; color:var(--muted); }
+.ch-creator strong { color:var(--text); }
+.ch-timer { font-family:'JetBrains Mono',monospace; font-size:0.65rem; color:var(--warn); }
+.ch-slots { font-family:'JetBrains Mono',monospace; font-size:0.65rem; }
+.slots-ok   { color:var(--accent); }
+.slots-warn { color:var(--warn); }
+.slots-full { color:var(--muted); }
+
+/* Badges */
+.bdg {
+  display:inline-block; font-family:'JetBrains Mono',monospace;
+  font-size:0.56rem; font-weight:700;
+  padding:0.12rem 0.45rem; border-radius:4px;
+  text-transform:uppercase; letter-spacing:0.5px;
+}
+.bdg-easy   { background:rgba(0,255,136,0.12); color:#00ff88; }
+.bdg-medium { background:rgba(255,190,11,0.12); color:#ffbe0b; }
+.bdg-hard   { background:rgba(255,107,53,0.12); color:#ff6b35; }
+.bdg-cat    { background:rgba(124,58,237,0.15); color:#a78bfa; }
+.bdg-mine   { background:rgba(167,139,250,0.15);color:#a78bfa; }
+.bdg-solved { background:rgba(0,255,136,0.15);  color:#00ff88; }
+.bdg-full   { background:rgba(107,107,138,0.15);color:#6b6b8a; }
+
+/* Empty */
+.empty { text-align:center; padding:3rem; font-family:'JetBrains Mono',monospace; font-size:0.8rem; color:var(--muted); }
+.empty-icon { font-size:2.5rem; opacity:0.3; margin-bottom:0.7rem; }
+
+/* Toast */
+.toast-wrap { position:fixed; bottom:1.5rem; right:1.5rem; z-index:9999; display:flex; flex-direction:column; gap:0.5rem; }
+.qz-toast {
+  background:var(--surf); border:1px solid var(--border); border-radius:8px;
+  padding:0.75rem 1.1rem; font-family:'JetBrains Mono',monospace;
+  font-size:0.78rem; color:var(--text);
+  display:flex; align-items:center; gap:0.6rem;
+  box-shadow:0 8px 30px rgba(0,0,0,0.4);
+  transform:translateX(120%); opacity:0; transition:all 0.3s ease; max-width:320px;
+}
+.qz-toast.show { transform:none; opacity:1; }
+.qz-toast.ok  { border-color:rgba(0,255,136,0.35); }
+.qz-toast.err { border-color:rgba(255,107,53,0.35); }
+
+@media(max-width:768px) {
+  .stat-row { grid-template-columns:1fr 1fr; }
+  .ch-grid  { grid-template-columns:1fr; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Stat Row -->
+<div class="stat-row">
+  <div class="stat-card">
+    <div class="stat-icon">🔥</div>
+    <div><div class="stat-val" id="s-active">—</div><div class="stat-lbl">Challenge Aktif</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">✅</div>
+    <div><div class="stat-val" id="s-solved">—</div><div class="stat-lbl">Sudah Solved</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">⏰</div>
+    <div><div class="stat-val" id="s-slots">—</div><div class="stat-lbl">Slot Tersisa</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">📝</div>
+    <div><div class="stat-val" id="s-mine">—</div><div class="stat-lbl">Buatanku</div></div>
+  </div>
+</div>
+
+<!-- Toolbar -->
+<div class="toolbar">
+  <input class="search-bar" id="q-search" type="text"
+         placeholder="🔍  cari challenge..." oninput="filterCards()">
+  <select class="filter-sel" id="q-level" onchange="filterCards()">
+    <option value="">Semua Level</option>
+    <option value="easy">Easy</option>
+    <option value="medium">Medium</option>
+    <option value="hard">Hard</option>
+  </select>
+  <div style="margin-left:auto">
+    <a href="/mahasiswa/challenge/submit" class="qz-btn qz-btn-primary">
+      <i class="fas fa-plus"></i> Submit Challenge
+    </a>
+  </div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+  <button class="tab-btn active" data-tab="all" onclick="switchTab('all')">
+    Semua <span class="badge" id="cnt-all">0</span>
+  </button>
+  <button class="tab-btn" data-tab="open" onclick="switchTab('open')">
+    Bisa Dikerjakan <span class="badge" id="cnt-open">0</span>
+  </button>
+  <button class="tab-btn" data-tab="solved" onclick="switchTab('solved')">
+    Sudah Solved <span class="badge" id="cnt-solved">0</span>
+  </button>
+  <button class="tab-btn" data-tab="mine" onclick="switchTab('mine')">
+    Buatanku <span class="badge" id="cnt-mine">0</span>
+  </button>
+</div>
+
+<!-- Grid -->
+<div class="ch-grid" id="ch-grid">
+  <div style="grid-column:1/-1">
+    <div class="empty"><div class="empty-icon">⏳</div>Memuat challenge...</div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toast-wrap"></div>
+{% endblock %}
+
+{% block js %}
+<script>
+let allChallenges = [];
+let activeTab     = 'all';
+
+document.addEventListener('DOMContentLoaded', loadChallenges);
+
+async function loadChallenges() {
+  try {
+    const res  = await fetch('/api/challenges');
+    const data = await res.json();
+    allChallenges = data.challenges || [];
+    updateStats();
+    updateCounts();
+    filterCards();
+  } catch(e) { toast('Gagal memuat challenge.', 'err'); }
+}
+
+function updateStats() {
+  const active  = allChallenges.length;
+  const solved  = allChallenges.filter(c => c.is_solved).length;
+  const slots   = allChallenges.reduce((a,c) => a + (c.slots_left||0), 0);
+  const mine    = allChallenges.filter(c => c.is_mine).length;
+  document.getElementById('s-active').textContent = active;
+  document.getElementById('s-solved').textContent = solved;
+  document.getElementById('s-slots').textContent  = slots;
+  document.getElementById('s-mine').textContent   = mine;
+}
+
+function updateCounts() {
+  document.getElementById('cnt-all').textContent    = allChallenges.length;
+  document.getElementById('cnt-open').textContent   = allChallenges.filter(c => !c.is_mine && !c.is_solved && c.slots_left > 0).length;
+  document.getElementById('cnt-solved').textContent = allChallenges.filter(c => c.is_solved).length;
+  document.getElementById('cnt-mine').textContent   = allChallenges.filter(c => c.is_mine).length;
+}
+
+function switchTab(tab) {
+  activeTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  filterCards();
+}
+
+function filterCards() {
+  const q     = document.getElementById('q-search').value.toLowerCase();
+  const level = document.getElementById('q-level').value;
+
+  let list = allChallenges.filter(c => {
+    const matchQ  = !q || c.judul.toLowerCase().includes(q) || (c.deskripsi||'').toLowerCase().includes(q);
+    const matchLv = !level || c.level === level;
+    return matchQ && matchLv;
+  });
+
+  if (activeTab === 'open')   list = list.filter(c => !c.is_mine && !c.is_solved && c.slots_left > 0);
+  if (activeTab === 'solved') list = list.filter(c => c.is_solved);
+  if (activeTab === 'mine')   list = list.filter(c => c.is_mine);
+
+  renderGrid(list);
+}
+
+function renderGrid(list) {
+  const grid = document.getElementById('ch-grid');
+  if (!list.length) {
+    grid.innerHTML = `<div style="grid-column:1/-1"><div class="empty">
+      <div class="empty-icon">🏜️</div>Tidak ada challenge ditemukan</div></div>`;
+    return;
+  }
+
+  grid.innerHTML = list.map(c => {
+    const hrs      = c.hours_remaining || 0;
+    const timerStr = hrs > 24
+      ? `${Math.floor(hrs/24)}h tersisa`
+      : hrs > 0 ? `${hrs}j tersisa` : 'Segera berakhir';
+    const timerCol = hrs <= 24 ? 'color:var(--warn)' : 'color:var(--muted)';
+
+    const slotsLeft = c.slots_left || 0;
+    let slotsBdg = '';
+    if (c.is_mine) {
+      slotsBdg = `<span class="bdg bdg-mine">Buatanku</span>`;
+    } else if (c.is_solved) {
+      slotsBdg = `<span class="bdg bdg-solved">✓ Solved</span>`;
+    } else if (slotsLeft === 0) {
+      slotsBdg = `<span class="bdg bdg-full">Slot Penuh</span>`;
+    } else {
+      const cls = slotsLeft <= 3 ? 'slots-warn' : 'slots-ok';
+      slotsBdg  = `<span class="ch-slots ${cls}">${slotsLeft} slot tersisa</span>`;
+    }
+
+    const glowColor = c.is_mine ? '#a78bfa' : c.level === 'easy' ? '#00ff88' : c.level === 'medium' ? '#ffbe0b' : '#ff6b35';
+    const clickable = !c.is_mine;
+    const onclick   = clickable ? `onclick="window.location='/mahasiswa/challenge/${c.id_challenge}'"` : '';
+
+    return `<div class="ch-card ${c.is_mine ? 'is-mine' : ''} ${c.is_solved ? 'solved' : ''}" ${onclick}>
+      <div class="ch-card-glow" style="background:${glowColor}"></div>
+      <div class="ch-title">${esc(c.judul)}</div>
+      <div class="ch-desc">${esc(c.deskripsi||'')}</div>
+      <div class="ch-meta">
+        <span class="bdg bdg-${c.level}">${c.level}</span>
+        ${slotsBdg}
+        <span style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;${timerCol}">
+          ⏱ ${timerStr}
+        </span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:var(--muted)">
+          👥 ${c.total_solvers||0}/10
+        </span>
+      </div>
+      <div class="ch-footer">
+        <div class="ch-creator">Oleh: <strong>${esc(c.creator_name||'—')}</strong></div>
+        ${!c.is_mine && !c.is_solved
+          ? `<button class="qz-btn qz-btn-outline" style="font-size:0.65rem;padding:0.3rem 0.7rem"
+               onclick="event.stopPropagation();downvote(${c.id_challenge})" title="Downvote">
+               👎 ${c.downvote_count||0}
+             </button>`
+          : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function downvote(id) {
+  const alasan = prompt('Alasan downvote (opsional):') ?? '';
+  if (alasan === null) return;
+  const res  = await fetch(`/api/challenges/${id}/downvote`, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({alasan})
+  });
+  const data = await res.json();
+  if (data.success) {
+    toast(data.auto_rejected ? 'Challenge otomatis ditarik! 🚫' : 'Downvote berhasil.', 'ok');
+    loadChallenges();
+  } else { toast(data.message||'Gagal.', 'err'); }
+}
+
+function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function toast(msg, type='ok') {
+  const wrap = document.getElementById('toast-wrap');
+  const el   = document.createElement('div');
+  el.className = `qz-toast ${type}`;
+  el.innerHTML = `<i class="fas fa-${type==='ok'?'check-circle':'exclamation-circle'}"
+    style="color:${type==='ok'?'var(--accent)':'var(--warn)'};flex-shrink:0"></i> ${msg}`;
+  wrap.appendChild(el);
+  requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('show')));
+  setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 400); }, 3000);
+}
+</script>
+{% endblock %}

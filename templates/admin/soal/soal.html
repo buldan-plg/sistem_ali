@@ -1,0 +1,1048 @@
+{% extends "layout/templates.html" %}
+{% block body_class %}admin-soal-page{% endblock %}
+{% block nav_quiz %}active{% endblock %}
+
+{% block css %}
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+/* ── Variables ── */
+:root {
+  --bg:     #0a0a0f;
+  --surf:   #111118;
+  --surf2:  #1a1a24;
+  --surf3:  #22222e;
+  --border: #2a2a3a;
+  --accent: #00ff88;
+  --warn:   #ff6b35;
+  --info:   #38bdf8;
+  --purple: #7c3aed;
+  --text:   #e2e2f0;
+  --muted:  #6b6b8a;
+}
+
+/* ── Page overrides ── */
+.admin-soal-page .content-wrapper { background: var(--bg) !important; }
+.admin-soal-page .content         { padding: 1.5rem 1.5rem 2rem !important; }
+.admin-soal-page .content-header  { background: var(--surf) !important; border-bottom: 1px solid var(--border); }
+.admin-soal-page .content-header h1 { font-family:'Syne',sans-serif; font-size:1.3rem; font-weight:800; color:var(--text); }
+.admin-soal-page .breadcrumb-item a  { color: var(--accent); }
+.admin-soal-page .breadcrumb-item.active { color: var(--muted); }
+
+* { box-sizing: border-box; }
+
+/* ── Stat Row ── */
+.stat-row { display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; margin-bottom:1.5rem; }
+.stat-box {
+  background: var(--surf);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: border-color 0.15s;
+}
+.stat-box:hover { border-color: var(--accent); }
+.stat-icon { font-size: 1.8rem; }
+.stat-val  { font-family:'Syne',sans-serif; font-size:1.7rem; font-weight:800; color:var(--text); line-height:1; }
+.stat-lbl  { font-family:'JetBrains Mono',monospace; font-size:0.62rem; color:var(--muted); text-transform:uppercase; letter-spacing:1.5px; margin-top:3px; }
+
+/* ── Card ── */
+.qz-card {
+  background: var(--surf);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.qz-card-header {
+  padding: 1rem 1.4rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+}
+.qz-card-title { font-family:'Syne',sans-serif; font-size:1rem; font-weight:800; color:var(--text); }
+
+/* ── Search & Filter row ── */
+.toolbar { display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap; }
+.search-bar {
+  background: var(--surf2);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 0.45rem 0.9rem;
+  color: var(--text);
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.78rem;
+  outline:none;
+  width:220px;
+  transition:border-color 0.15s;
+}
+.search-bar:focus { border-color:var(--accent); }
+.search-bar::placeholder { color:var(--muted); }
+.filter-sel {
+  background:var(--surf2);
+  border:1px solid var(--border);
+  border-radius:7px;
+  padding:0.45rem 0.7rem;
+  color:var(--text);
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.75rem;
+  outline:none;
+  cursor:pointer;
+}
+.filter-sel:focus { border-color:var(--accent); }
+
+/* ── Buttons ── */
+.qz-btn {
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.75rem;
+  font-weight:700;
+  padding:0.45rem 1rem;
+  border-radius:6px;
+  border:none;
+  cursor:pointer;
+  transition:all 0.15s;
+  text-transform:uppercase;
+  letter-spacing:0.5px;
+  display:inline-flex;
+  align-items:center;
+  gap:0.35rem;
+  white-space:nowrap;
+}
+.qz-btn:disabled { opacity:0.5; cursor:not-allowed; }
+.qz-btn-primary { background:var(--accent); color:#000; }
+.qz-btn-primary:hover:not(:disabled) { background:#00e07a; transform:translateY(-1px); box-shadow:0 4px 14px rgba(0,255,136,0.25); }
+.qz-btn-outline { background:transparent; border:1px solid var(--border); color:var(--muted); }
+.qz-btn-outline:hover { border-color:var(--accent); color:var(--accent); }
+.qz-btn-warn  { background:transparent; border:1px solid rgba(255,107,53,0.4); color:var(--warn); }
+.qz-btn-warn:hover  { background:rgba(255,107,53,0.08); }
+.qz-btn-info  { background:transparent; border:1px solid rgba(56,189,248,0.4); color:var(--info); }
+.qz-btn-info:hover  { background:rgba(56,189,248,0.08); }
+.qz-btn-sm { padding:0.28rem 0.65rem; font-size:0.68rem; }
+.qz-btn-xs { padding:0.2rem 0.5rem;  font-size:0.62rem; }
+
+/* ── Table ── */
+.qz-table-wrap { overflow-x:auto; }
+.qz-table { width:100%; border-collapse:collapse; font-size:0.8rem; font-family:'JetBrains Mono',monospace; }
+.qz-table th {
+  padding:0.65rem 1rem;
+  text-align:left;
+  font-size:0.6rem;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  color:var(--muted);
+  border-bottom:1px solid var(--border);
+  background:var(--surf2);
+  white-space:nowrap;
+}
+.qz-table td {
+  padding:0.8rem 1rem;
+  border-bottom:1px solid var(--border);
+  color:var(--text);
+  vertical-align:middle;
+}
+.qz-table tr:last-child td { border-bottom:none; }
+.qz-table tbody tr:hover td { background:rgba(255,255,255,0.02); }
+.qz-table .no-data td { text-align:center; color:var(--muted); padding:3rem; }
+
+/* ── Badges ── */
+.bdg {
+  display:inline-block;
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.56rem;
+  font-weight:700;
+  padding:0.12rem 0.45rem;
+  border-radius:4px;
+  text-transform:uppercase;
+  letter-spacing:0.5px;
+  margin-right:2px;
+}
+.bdg-easy   { background:rgba(0,255,136,0.12); color:#00ff88; }
+.bdg-medium { background:rgba(255,190,11,0.12); color:#ffbe0b; }
+.bdg-hard   { background:rgba(255,107,53,0.12); color:#ff6b35; }
+.bdg-cat    { background:rgba(124,58,237,0.15); color:#a78bfa; }
+.bdg-lang   { background:rgba(56,189,248,0.12); color:#38bdf8; }
+.bdg-on     { background:rgba(0,255,136,0.12);  color:#00ff88; }
+.bdg-off    { background:rgba(107,107,138,0.15);color:#6b6b8a; }
+
+/* ══════════════════════════════
+   MODAL
+══════════════════════════════ */
+.qz-modal-backdrop {
+  position:fixed; inset:0;
+  background:rgba(0,0,0,0.75);
+  backdrop-filter:blur(5px);
+  z-index:1055;
+  display:none;
+  align-items:flex-start;
+  justify-content:center;
+  padding:1.5rem 1rem;
+  overflow-y:auto;
+}
+.qz-modal-backdrop.show { display:flex; }
+.qz-modal {
+  background:var(--surf);
+  border:1px solid var(--border);
+  border-radius:14px;
+  width:100%;
+  max-width:860px;
+  display:flex;
+  flex-direction:column;
+  animation:modalIn 0.22s ease;
+  margin:auto;
+}
+@keyframes modalIn {
+  from { opacity:0; transform:translateY(20px) scale(0.97); }
+  to   { opacity:1; transform:none; }
+}
+.qz-modal-header {
+  padding:1.2rem 1.6rem;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  position:sticky;
+  top:0;
+  background:var(--surf);
+  border-radius:14px 14px 0 0;
+  z-index:1;
+}
+.qz-modal-title { font-family:'Syne',sans-serif; font-size:1.1rem; font-weight:800; color:var(--text); }
+.modal-close { background:none; border:none; color:var(--muted); font-size:1.3rem; cursor:pointer; line-height:1; padding:0; transition:color 0.15s; }
+.modal-close:hover { color:var(--warn); }
+.qz-modal-body  { padding:1.6rem; }
+.qz-modal-footer {
+  padding:1rem 1.6rem;
+  border-top:1px solid var(--border);
+  display:flex;
+  justify-content:flex-end;
+  gap:0.7rem;
+  position:sticky;
+  bottom:0;
+  background:var(--surf);
+  border-radius:0 0 14px 14px;
+}
+
+/* ── Form ── */
+.form-section {
+  border:1px solid var(--border);
+  border-radius:8px;
+  margin-bottom:1.2rem;
+  overflow:hidden;
+}
+.form-section-title {
+  background:var(--surf2);
+  padding:0.6rem 1rem;
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.6rem;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:var(--muted);
+  border-bottom:1px solid var(--border);
+}
+.form-section-body { padding:1rem; }
+
+.form-group { margin-bottom:1rem; }
+.form-group:last-child { margin-bottom:0; }
+.form-label {
+  display:block;
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.62rem;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  color:var(--muted);
+  margin-bottom:0.35rem;
+}
+.req { color:var(--warn); margin-left:2px; }
+.form-ctrl {
+  width:100%;
+  background:var(--surf2);
+  border:1px solid var(--border);
+  border-radius:7px;
+  padding:0.55rem 0.85rem;
+  color:var(--text);
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.8rem;
+  outline:none;
+  transition:border-color 0.15s;
+}
+.form-ctrl:focus { border-color:var(--accent); }
+.form-ctrl::placeholder { color:var(--muted); }
+textarea.form-ctrl { resize:vertical; min-height:75px; line-height:1.65; }
+select.form-ctrl option { background:var(--surf2); }
+.grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+.grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:1rem; }
+
+/* ── Lang Checkbox ── */
+.lang-group { display:flex; gap:0.7rem; flex-wrap:wrap; }
+.lang-lbl {
+  display:flex; align-items:center; gap:0.45rem;
+  padding:0.4rem 0.9rem;
+  border:1px solid var(--border);
+  border-radius:7px;
+  cursor:pointer;
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.75rem;
+  color:var(--muted);
+  transition:all 0.15s;
+  user-select:none;
+}
+.lang-lbl input { display:none; }
+.lang-lbl.on { border-color:var(--accent); color:var(--accent); background:rgba(0,255,136,0.06); }
+
+/* ── Starter Code ── */
+.sc-tabs { display:flex; gap:0.3rem; margin-bottom:0.6rem; }
+.sc-tab {
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.68rem; font-weight:700;
+  padding:0.25rem 0.75rem;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:transparent;
+  color:var(--muted);
+  cursor:pointer;
+  transition:all 0.15s;
+}
+.sc-tab.active { background:var(--accent); border-color:var(--accent); color:#000; }
+.sc-pane { display:none; }
+.sc-pane.active { display:block; }
+.code-ta {
+  width:100%;
+  background:#0d0d14;
+  border:1px solid var(--border);
+  border-radius:7px;
+  padding:0.8rem 1rem;
+  color:#e2e2f0;
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.8rem;
+  line-height:1.7;
+  min-height:110px;
+  resize:vertical;
+  outline:none;
+  tab-size:4;
+}
+.code-ta:focus { border-color:var(--accent); }
+
+/* ── Test Panel ── */
+.test-wrap { display:grid; grid-template-columns:1fr 1fr; gap:1rem; align-items:start; }
+.test-out-box {
+  background:#0d0d14;
+  border:1px solid var(--border);
+  border-radius:7px;
+  padding:0.75rem 1rem;
+  min-height:90px;
+}
+.test-out-box pre { margin:0; font-family:'JetBrains Mono',monospace; font-size:0.78rem; color:#e2e2f0; white-space:pre-wrap; }
+
+/* ── Hints ── */
+.hints-wrap { display:flex; flex-direction:column; gap:0.45rem; }
+.hint-row { display:flex; gap:0.4rem; align-items:center; }
+.hint-row input {
+  flex:1;
+  background:var(--surf2);
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:0.45rem 0.75rem;
+  color:var(--text);
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.78rem;
+  outline:none;
+}
+.hint-row input:focus { border-color:var(--purple); }
+.hint-num {
+  width:22px; text-align:center;
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.65rem; color:var(--muted);
+  flex-shrink:0;
+}
+.hint-del { background:none; border:none; color:var(--muted); cursor:pointer; font-size:0.95rem; padding:0.2rem 0.3rem; }
+.hint-del:hover { color:var(--warn); }
+
+/* ── Toast ── */
+.toast-wrap { position:fixed; bottom:1.5rem; right:1.5rem; z-index:9999; display:flex; flex-direction:column; gap:0.5rem; }
+.qz-toast {
+  background:var(--surf);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:0.75rem 1.1rem;
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.78rem;
+  color:var(--text);
+  display:flex; align-items:center; gap:0.6rem;
+  box-shadow:0 8px 30px rgba(0,0,0,0.4);
+  transform:translateX(120%);
+  opacity:0;
+  transition:all 0.3s ease;
+  max-width:320px;
+}
+.qz-toast.show { transform:none; opacity:1; }
+.qz-toast.success { border-color:rgba(0,255,136,0.4); }
+.qz-toast.error   { border-color:rgba(255,107,53,0.4); }
+
+/* ── Responsive ── */
+@media(max-width:768px) {
+  .stat-row { grid-template-columns:1fr 1fr; }
+  .grid-2,.grid-3,.test-wrap { grid-template-columns:1fr; }
+  .qz-modal { margin:0.5rem; }
+  .qz-card-header { flex-direction:column; align-items:flex-start; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ── Stats ── -->
+<div class="stat-row">
+  <div class="stat-box">
+    <div class="stat-icon">📋</div>
+    <div><div class="stat-val" id="st-total">—</div><div class="stat-lbl">Total Soal</div></div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-icon">✅</div>
+    <div><div class="stat-val" id="st-active">—</div><div class="stat-lbl">Aktif</div></div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-icon">🔥</div>
+    <div><div class="stat-val" id="st-hard">—</div><div class="stat-lbl">Soal Hard</div></div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-icon">🏆</div>
+    <div><div class="stat-val" id="st-solved">—</div><div class="stat-lbl">Total Solved</div></div>
+  </div>
+</div>
+
+<!-- ── Tabel ── -->
+<div class="qz-card">
+  <div class="qz-card-header">
+    <span class="qz-card-title">Daftar Soal</span>
+    <div class="toolbar">
+      <input class="search-bar" id="q-search" type="text"
+             placeholder="🔍  cari judul / kategori..." oninput="filterTable()">
+      <select class="filter-sel" id="q-level" onchange="filterTable()">
+        <option value="">Semua Level</option>
+        <option value="easy">Easy</option>
+        <option value="medium">Medium</option>
+        <option value="hard">Hard</option>
+      </select>
+      <select class="filter-sel" id="q-status" onchange="filterTable()">
+        <option value="">Semua Status</option>
+        <option value="1">Aktif</option>
+        <option value="0">Nonaktif</option>
+      </select>
+      <button class="qz-btn qz-btn-primary" onclick="openModal()">
+        <i class="fas fa-plus"></i> Tambah Soal
+      </button>
+    </div>
+  </div>
+
+  <div class="qz-table-wrap">
+    <table class="qz-table">
+      <thead>
+        <tr>
+          <th style="width:40px">#</th>
+          <th>Judul</th>
+          <th>Level</th>
+          <th>Kategori</th>
+          <th>Bahasa</th>
+          <th>Solved</th>
+          <th>Pembuat</th>
+          <th>Status</th>
+          <th style="width:130px">Aksi</th>
+        </tr>
+      </thead>
+      <tbody id="soal-tbody">
+        <tr class="no-data"><td colspan="9">
+          <i class="fas fa-spinner fa-spin" style="margin-right:8px"></i>Memuat data...
+        </td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══════════════════════
+     MODAL FORM
+══════════════════════ -->
+<div class="qz-modal-backdrop" id="modal-bg">
+  <div class="qz-modal">
+
+    <div class="qz-modal-header">
+      <span class="qz-modal-title" id="modal-title">➕ Tambah Soal Baru</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+
+    <div class="qz-modal-body">
+
+      <!-- BAGIAN 1: Info Dasar -->
+      <div class="form-section">
+        <div class="form-section-title">📝 Informasi Soal</div>
+        <div class="form-section-body">
+
+          <div class="form-group">
+            <label class="form-label">Judul <span class="req">*</span></label>
+            <input class="form-ctrl" id="f-judul" type="text" placeholder="contoh: Hello World">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              Deskripsi <span class="req">*</span>
+              <span style="text-transform:none;letter-spacing:0;color:var(--muted)">
+                — support **bold** dan `code`
+              </span>
+            </label>
+            <textarea class="form-ctrl" id="f-deskripsi" rows="3"
+              placeholder="Tampilkan teks **Hello World** ke layar.&#10;- Gunakan `echo` untuk PHP"></textarea>
+          </div>
+
+          <div class="grid-3">
+            <div class="form-group">
+              <label class="form-label">Level <span class="req">*</span></label>
+              <select class="form-ctrl" id="f-level">
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Kategori <span class="req">*</span></label>
+              <input class="form-ctrl" id="f-kategori" type="text"
+                     placeholder="basic / loop / string / math / array">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Urutan Tampil</label>
+              <input class="form-ctrl" id="f-urutan" type="number" min="0" placeholder="0">
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label">Bahasa yang Didukung <span class="req">*</span></label>
+            <div class="lang-group">
+              <label class="lang-lbl on" id="lc-php">
+                <input type="checkbox" id="f-php" checked onchange="onLangChange()">
+                <i class="fab fa-php"></i> PHP
+              </label>
+              <label class="lang-lbl on" id="lc-js">
+                <input type="checkbox" id="f-js" checked onchange="onLangChange()">
+                <i class="fab fa-js-square"></i> JavaScript
+              </label>
+              <label class="lang-lbl on" id="lc-python">
+                <input type="checkbox" id="f-python" checked onchange="onLangChange()">
+                <i class="fab fa-python"></i> Python
+              </label>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- BAGIAN 2: Starter Code -->
+      <div class="form-section">
+        <div class="form-section-title">💻 Starter Code (opsional)</div>
+        <div class="form-section-body">
+          <div class="sc-tabs" id="sc-tabs"></div>
+          <div id="sc-panes">
+            <div class="sc-pane" id="pane-php">
+              <textarea class="code-ta" id="sc-php"
+                placeholder="<?php&#10;// Tulis kode kamu di sini&#10;"></textarea>
+            </div>
+            <div class="sc-pane" id="pane-js">
+              <textarea class="code-ta" id="sc-js"
+                placeholder="// Tulis kode kamu di sini"></textarea>
+            </div>
+            <div class="sc-pane" id="pane-python">
+              <textarea class="code-ta" id="sc-python"
+                placeholder="# Tulis kode kamu di sini"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BAGIAN 3: Expected Output + Test -->
+      <div class="form-section">
+        <div class="form-section-title">🎯 Expected Output & Test</div>
+        <div class="form-section-body">
+          <div class="test-wrap">
+
+            <div>
+              <div class="form-group">
+                <label class="form-label">Expected Output <span class="req">*</span></label>
+                <textarea class="form-ctrl" id="f-expected" rows="4"
+                  placeholder="Hello World"></textarea>
+              </div>
+              <button class="qz-btn qz-btn-outline qz-btn-sm" onclick="copyOutputToExpected()">
+                <i class="fas fa-arrow-left"></i> Salin output → expected
+              </button>
+            </div>
+
+            <div>
+              <div class="form-group">
+                <label class="form-label">Test Run</label>
+                <div style="display:flex;gap:0.5rem;margin-bottom:0.6rem">
+                  <select class="form-ctrl" id="test-lang" style="flex:1">
+                    <option value="php">PHP</option>
+                    <option value="javascript">JavaScript</option>
+                    <option value="python">Python</option>
+                  </select>
+                  <button class="qz-btn qz-btn-info qz-btn-sm" id="btn-test" onclick="testRun()">
+                    <i class="fas fa-play"></i> Run
+                  </button>
+                </div>
+                <div class="test-out-box">
+                  <pre id="test-out">—</pre>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- BAGIAN 4: Hints -->
+      <div class="form-section">
+        <div class="form-section-title" style="display:flex;align-items:center;justify-content:space-between">
+          <span>💡 Hints</span>
+        </div>
+        <div class="form-section-body">
+          <div class="hints-wrap" id="hints-wrap"></div>
+          <button class="qz-btn qz-btn-outline qz-btn-sm" style="margin-top:0.6rem" onclick="addHint()">
+            <i class="fas fa-plus"></i> Tambah Hint
+          </button>
+        </div>
+      </div>
+
+    </div><!-- /modal-body -->
+
+    <div class="qz-modal-footer">
+      <button class="qz-btn qz-btn-outline" onclick="closeModal()">Batal</button>
+      <button class="qz-btn qz-btn-primary" id="btn-save" onclick="saveSoal()">
+        <i class="fas fa-save"></i> Simpan Soal
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- Toast container -->
+<div class="toast-wrap" id="toast-wrap"></div>
+
+{% endblock %}
+
+
+{% block js %}
+<script>
+// ─── State ───────────────────────────────────────────
+let allSoal   = [];
+let editingId = null;
+let activeTab = 'php';
+
+// ─── Boot ────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  loadSoal();
+  buildScTabs();
+  addHint();
+
+  // Tab key di semua code textarea
+  document.querySelectorAll('.code-ta').forEach(el => {
+    el.addEventListener('keydown', e => {
+      if (e.key !== 'Tab') return;
+      e.preventDefault();
+      const s = el.selectionStart;
+      el.value = el.value.substring(0, s) + '    ' + el.value.substring(el.selectionEnd);
+      el.selectionStart = el.selectionEnd = s + 4;
+    });
+  });
+
+  // Close modal on backdrop click
+  document.getElementById('modal-bg').addEventListener('click', e => {
+    if (e.target === e.currentTarget) closeModal();
+  });
+});
+
+// ─── Load & Render table ─────────────────────────────
+async function loadSoal() {
+  try {
+    const res  = await fetch('/admin/api/soal');
+    const data = await res.json();
+    allSoal    = data.soal || [];
+    renderStats(allSoal);
+    filterTable();
+  } catch(e) {
+    toast('Gagal memuat data soal.', 'error');
+  }
+}
+
+function renderStats(list) {
+  document.getElementById('st-total').textContent  = list.length;
+  document.getElementById('st-active').textContent = list.filter(s => s.is_active).length;
+  document.getElementById('st-hard').textContent   = list.filter(s => s.level === 'hard').length;
+  document.getElementById('st-solved').textContent = list.reduce((a,b) => a + (b.total_solved||0), 0);
+}
+
+function filterTable() {
+  const q      = document.getElementById('q-search').value.toLowerCase();
+  const level  = document.getElementById('q-level').value;
+  const status = document.getElementById('q-status').value;
+
+  const filtered = allSoal.filter(s => {
+    const matchQ   = !q || s.judul.toLowerCase().includes(q) || s.kategori.toLowerCase().includes(q);
+    const matchLv  = !level  || s.level === level;
+    const matchSt  = status === '' || String(s.is_active ? 1 : 0) === status;
+    return matchQ && matchLv && matchSt;
+  });
+
+  renderTable(filtered);
+}
+
+function renderTable(list) {
+  const tbody = document.getElementById('soal-tbody');
+  if (!list.length) {
+    tbody.innerHTML = `<tr class="no-data"><td colspan="9">
+      <div style="padding:2rem;text-align:center">
+        <div style="font-size:2rem;opacity:.3;margin-bottom:.5rem">📭</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:.8rem;color:var(--muted)">Tidak ada soal ditemukan</div>
+      </div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = list.map((s, i) => {
+    const langs = [
+      s.support_php    ? '<span class="bdg bdg-lang">PHP</span>' : '',
+      s.support_js     ? '<span class="bdg bdg-lang">JS</span>'  : '',
+      s.support_python ? '<span class="bdg bdg-lang">PY</span>'  : '',
+    ].join('');
+
+    const createdAt = s.created_at ? new Date(s.created_at).toLocaleDateString('id-ID') : '—';
+
+    return `<tr>
+      <td style="color:var(--muted);font-size:.72rem">${i+1}</td>
+      <td>
+        <div style="font-weight:600;color:var(--text);margin-bottom:2px">${esc(s.judul)}</div>
+        <div style="font-size:.65rem;color:var(--muted)">ID: ${s.id_soal} &bull; ${createdAt}</div>
+      </td>
+      <td><span class="bdg bdg-${s.level}">${s.level}</span></td>
+      <td><span class="bdg bdg-cat">${esc(s.kategori)}</span></td>
+      <td>${langs}</td>
+      <td style="color:var(--muted);text-align:center">${s.total_solved||0}</td>
+      <td style="color:var(--muted);font-size:.72rem">${esc(s.created_by_name||'—')}</td>
+      <td>
+        <span class="bdg bdg-${s.is_active ? 'on' : 'off'}">
+          ${s.is_active ? 'Aktif' : 'Nonaktif'}
+        </span>
+      </td>
+      <td>
+        <div style="display:flex;gap:0.35rem">
+          <button class="qz-btn qz-btn-outline qz-btn-xs" onclick="editSoal(${s.id_soal})" title="Edit">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button class="qz-btn qz-btn-info qz-btn-xs" onclick="toggleSoal(${s.id_soal})" title="${s.is_active?'Nonaktifkan':'Aktifkan'}">
+            <i class="fas fa-${s.is_active ? 'eye-slash' : 'eye'}"></i>
+          </button>
+          <button class="qz-btn qz-btn-warn qz-btn-xs" onclick="deleteSoal(${s.id_soal})" title="Hapus">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ─── Modal ────────────────────────────────────────────
+function openModal() {
+  editingId = null;
+  resetForm();
+  document.getElementById('modal-title').textContent = '➕ Tambah Soal Baru';
+  document.getElementById('modal-bg').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('modal-bg').classList.remove('show');
+}
+
+function resetForm() {
+  ['f-judul','f-deskripsi','f-kategori','f-expected','sc-php','sc-js','sc-python'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('f-level').value  = 'easy';
+  document.getElementById('f-urutan').value = '';
+  document.getElementById('test-out').textContent = '—';
+
+  // Reset checkboxes
+  ['php','js','python'].forEach(l => setLangCheck(l, true));
+
+  // Reset hints
+  document.getElementById('hints-wrap').innerHTML = '';
+  addHint();
+
+  buildScTabs();
+  switchTab('php');
+}
+
+// ─── Language checkboxes ──────────────────────────────
+function onLangChange() {
+  ['php','js','python'].forEach(l => {
+    const cb = document.getElementById(`f-${l}`);
+    const lb = document.getElementById(`lc-${l}`);
+    lb.classList.toggle('on', cb.checked);
+  });
+  buildScTabs();
+}
+
+function setLangCheck(lang, val) {
+  const cb = document.getElementById(`f-${lang}`);
+  const lb = document.getElementById(`lc-${lang}`);
+  cb.checked = val;
+  lb.classList.toggle('on', val);
+}
+
+// ─── Starter Code Tabs ────────────────────────────────
+function buildScTabs() {
+  const container = document.getElementById('sc-tabs');
+  container.innerHTML = '';
+  const map = { php: {label:'PHP', id:'f-php'}, js: {label:'JavaScript', id:'f-js'}, python: {label:'Python', id:'f-python'} };
+  let first = null;
+
+  ['php','js','python'].forEach(l => {
+    if (!document.getElementById(map[l].id).checked) return;
+    if (!first) first = l;
+    const btn      = document.createElement('button');
+    btn.type       = 'button';
+    btn.className  = `sc-tab${l === activeTab ? ' active' : ''}`;
+    btn.textContent = map[l].label;
+    btn.dataset.l  = l;
+    btn.onclick    = () => switchTab(l);
+    container.appendChild(btn);
+  });
+
+  // Jika tab aktif sekarang tidak tercentang, pindah ke yang pertama
+  const activeCb = document.getElementById(`f-${activeTab}`);
+  if (!activeCb?.checked && first) switchTab(first);
+}
+
+function switchTab(lang) {
+  activeTab = lang;
+  document.querySelectorAll('.sc-tab').forEach(t => t.classList.toggle('active', t.dataset.l === lang));
+  document.querySelectorAll('.sc-pane').forEach(p => p.classList.remove('active'));
+  const pane = document.getElementById(`pane-${lang}`);
+  if (pane) pane.classList.add('active');
+}
+
+// ─── Hints ────────────────────────────────────────────
+function addHint(val = '') {
+  const wrap = document.getElementById('hints-wrap');
+  const n    = wrap.children.length + 1;
+  const row  = document.createElement('div');
+  row.className = 'hint-row';
+  row.innerHTML = `
+    <span class="hint-num">${n}</span>
+    <input type="text" placeholder="Hint ke-${n}..." value="${esc(val)}">
+    <button class="hint-del" onclick="removeHint(this)" title="Hapus">✕</button>
+  `;
+  wrap.appendChild(row);
+}
+
+function removeHint(btn) {
+  btn.closest('.hint-row').remove();
+  // Re-number
+  document.querySelectorAll('#hints-wrap .hint-num').forEach((el, i) => {
+    el.textContent = i + 1;
+  });
+}
+
+// ─── Test Run ─────────────────────────────────────────
+async function testRun() {
+  const lang   = document.getElementById('test-lang').value;
+  const scMap  = { php:'sc-php', javascript:'sc-js', python:'sc-python' };
+  const code   = document.getElementById(scMap[lang])?.value || '';
+  const outEl  = document.getElementById('test-out');
+  const btn    = document.getElementById('btn-test');
+
+  if (!code.trim()) {
+    toast('Tulis starter code untuk bahasa ini dulu.', 'error');
+    return;
+  }
+
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+  btn.disabled  = true;
+  outEl.textContent = '⏳ running...';
+
+  try {
+    const res  = await fetch('/admin/api/soal/test', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ language: lang, code }),
+    });
+    const data = await res.json();
+    outEl.textContent = data.output || '(tidak ada output)';
+    outEl.style.color = data.output?.startsWith('❌') ? 'var(--warn)' : '#e2e2f0';
+  } catch(e) {
+    outEl.textContent = '❌ Gagal koneksi ke server';
+  } finally {
+    btn.innerHTML = '<i class="fas fa-play"></i> Run';
+    btn.disabled  = false;
+  }
+}
+
+function copyOutputToExpected() {
+  const out = document.getElementById('test-out').textContent;
+  if (out === '—' || out.startsWith('⏳')) return;
+  document.getElementById('f-expected').value = out;
+  toast('Output disalin ke Expected Output ✓', 'success');
+}
+
+// ─── Save (Create / Update) ───────────────────────────
+async function saveSoal() {
+  const judul     = document.getElementById('f-judul').value.trim();
+  const deskripsi = document.getElementById('f-deskripsi').value.trim();
+  const expected  = document.getElementById('f-expected').value.trim();
+  const level     = document.getElementById('f-level').value;
+  const kategori  = document.getElementById('f-kategori').value.trim();
+  const urutan    = parseInt(document.getElementById('f-urutan').value) || 0;
+
+  if (!judul)     { toast('Judul wajib diisi!', 'error');           return; }
+  if (!deskripsi) { toast('Deskripsi wajib diisi!', 'error');       return; }
+  if (!expected)  { toast('Expected output wajib diisi!', 'error'); return; }
+  if (!kategori)  { toast('Kategori wajib diisi!', 'error');        return; }
+
+  const phpOk = document.getElementById('f-php').checked;
+  const jsOk  = document.getElementById('f-js').checked;
+  const pyOk  = document.getElementById('f-python').checked;
+  if (!phpOk && !jsOk && !pyOk) {
+    toast('Pilih minimal 1 bahasa pemrograman!', 'error'); return;
+  }
+
+  const hints = [...document.querySelectorAll('#hints-wrap .hint-row input')]
+    .map(i => i.value.trim()).filter(Boolean);
+
+  const payload = {
+    judul, deskripsi,
+    expected_output: expected,
+    level, kategori, urutan,
+    support_php:    phpOk,
+    support_js:     jsOk,
+    support_python: pyOk,
+    starter_code: {
+      php:        document.getElementById('sc-php').value,
+      javascript: document.getElementById('sc-js').value,
+      python:     document.getElementById('sc-python').value,
+    },
+    hints,
+  };
+
+  const url    = editingId ? `/admin/api/soal/${editingId}` : '/admin/api/soal';
+  const method = editingId ? 'PUT' : 'POST';
+  const btn    = document.getElementById('btn-save');
+
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
+  btn.disabled  = true;
+
+  try {
+    const res  = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+
+    if (data.success || data.id_soal) {
+      toast(editingId ? 'Soal berhasil diupdate! ✓' : 'Soal berhasil ditambahkan! ✓', 'success');
+      closeModal();
+      loadSoal();
+    } else {
+      toast(data.error || 'Gagal menyimpan soal.', 'error');
+    }
+  } catch(e) {
+    toast('Gagal terhubung ke server.', 'error');
+  } finally {
+    btn.innerHTML = '<i class="fas fa-save"></i> Simpan Soal';
+    btn.disabled  = false;
+  }
+}
+
+// ─── Edit ─────────────────────────────────────────────
+async function editSoal(id_soal) {
+  try {
+    const res  = await fetch(`/admin/api/soal/${id_soal}`);
+    const data = await res.json();
+    if (data.error) { toast(data.error, 'error'); return; }
+
+    editingId = id_soal;
+    document.getElementById('modal-title').textContent = '✏️ Edit Soal';
+
+    document.getElementById('f-judul').value     = data.judul     || '';
+    document.getElementById('f-deskripsi').value = data.deskripsi || '';
+    document.getElementById('f-level').value     = data.level     || 'easy';
+    document.getElementById('f-kategori').value  = data.kategori  || '';
+    document.getElementById('f-expected').value  = data.expected_output || '';
+    document.getElementById('f-urutan').value    = data.urutan    || 0;
+    document.getElementById('test-out').textContent = '—';
+
+    setLangCheck('php',    !!data.support_php);
+    setLangCheck('js',     !!data.support_js);
+    setLangCheck('python', !!data.support_python);
+    onLangChange();
+
+    document.getElementById('sc-php').value    = data.starter_code?.php        || '';
+    document.getElementById('sc-js').value     = data.starter_code?.javascript || '';
+    document.getElementById('sc-python').value = data.starter_code?.python     || '';
+
+    document.getElementById('hints-wrap').innerHTML = '';
+    (data.hints || []).forEach(h => addHint(h));
+    if (!(data.hints||[]).length) addHint();
+
+    buildScTabs();
+    switchTab(data.support_php ? 'php' : data.support_js ? 'js' : 'python');
+
+    document.getElementById('modal-bg').classList.add('show');
+  } catch(e) {
+    toast('Gagal memuat data soal.', 'error');
+  }
+}
+
+// ─── Toggle aktif ─────────────────────────────────────
+async function toggleSoal(id_soal) {
+  const res  = await fetch(`/admin/api/soal/${id_soal}/toggle`, { method: 'PATCH' });
+  const data = await res.json();
+  if (data.success) {
+    toast(data.is_active ? 'Soal diaktifkan.' : 'Soal dinonaktifkan.', 'success');
+    loadSoal();
+  }
+}
+
+// ─── Delete ───────────────────────────────────────────
+async function deleteSoal(id_soal) {
+  if (!confirm('Hapus soal ini?\n(soft delete — data hasil mahasiswa tetap tersimpan)')) return;
+  const res  = await fetch(`/admin/api/soal/${id_soal}`, { method: 'DELETE' });
+  const data = await res.json();
+  if (data.success) { toast('Soal berhasil dihapus.', 'success'); loadSoal(); }
+  else toast(data.error || 'Gagal menghapus.', 'error');
+}
+
+// ─── Toast ────────────────────────────────────────────
+function toast(msg, type = 'success') {
+  const wrap = document.getElementById('toast-wrap');
+  const el   = document.createElement('div');
+  const icon = type === 'success' ? 'check-circle' : 'exclamation-circle';
+  const col  = type === 'success' ? 'var(--accent)' : 'var(--warn)';
+
+  el.className = `qz-toast ${type}`;
+  el.innerHTML = `<i class="fas fa-${icon}" style="color:${col};flex-shrink:0"></i> ${msg}`;
+  wrap.appendChild(el);
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => el.classList.add('show'));
+  });
+
+  setTimeout(() => {
+    el.classList.remove('show');
+    setTimeout(() => el.remove(), 400);
+  }, 3000);
+}
+
+// ─── Utils ────────────────────────────────────────────
+function esc(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+{% endblock %}

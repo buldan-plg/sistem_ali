@@ -1,0 +1,63 @@
+{%extends "layout/templates.html"%}
+
+{%block content%}
+<div class="card card-dark">
+    <div class="card-header">
+        <h3 class="card-title">
+            <i class="fas fa-table"></i> {{title}}
+        </h3>
+        <div class="card-tools">
+            <a href="/admin/mahasiswa/tambah" class="btn btn-dark">
+                <i class="fas fa-plus"></i> Tambah mahasiswa
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table id="example1" class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th class="w-5">No</th>
+                        <th class="w-15">NIM</th>
+                        <th class="w-13">Nama</th>
+                        <th class="w-15">Jenis Kelmain</th>
+                        <th class="w-25">Alamat</th>
+                        <th class=" w-20 text-center">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in mahasiswa %}
+                    <tr>
+                        <td>{{loop.index}}</td>
+                        <td>{{row.nim}}</td>
+                        <td>{{row.nama_mahasiswa}}</td>
+                        <td>
+                            {% if row.jenis_kelamin == 'L' %}
+                                Laki-Laki
+                            {%else%}
+                                Prempuan
+                            {%endif%}
+                        </td>
+                        <td>{{row.alamat}}</td>
+                        <td class="text-center">
+                            <a href="/admin/mahasiswa/{{row.id_mahasiswa}}/detail" class="btn btn-sm btn-info">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="/admin/mahasiswa/{{row.id_mahasiswa}}/edit" class="btn btn-sm btn-warning">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <form action="/admin/mahasiswa/{{row.id_mahasiswa}}/delete" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-danger"
+                                onclick="return confirm('Apakah anda yakin?')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {%endfor%}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{%endblock%}

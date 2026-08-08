@@ -1,0 +1,103 @@
+{% extends "layout/templates.html" %}
+
+{% block content %}
+<div class="card card-dark">
+    <div class="card-header">
+        <h3 class="card-title">
+            <i class="fas fa-plus"></i> {{title}}
+        </h3>
+    </div>
+    <form action="/admin/users/tambah" method="post">
+        <div class="card-body">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" name="username" id="username" class="form-control" 
+                    placeholder="masukkan username........"
+                    autocomplete="off" autofocus required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" name="password" id="password" class="form-control"
+                    placeholder="masukkan password........" required>
+            </div>
+            <div class="form-group">
+                <label for="id_role">Role</label>
+                <select name="id_role" id="id_role" class="form-control" required>
+                    <option value="">Role.....</option>
+                    {% for role in roles %}
+                    <option value="{{role.id_role}}">{{role.nama_role}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group" id="dynamic-selector-container" style="display: none;">
+                <label id="dynamic-label"></label>
+                <select name="id_pengguna" id="dynamic-select" class="form-control select2bs4">
+                    <option value="">Pilih pengguna</option>
+                </select>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-success">
+                <i class="fas fa-save"></i> Insert
+            </button>
+            <a href="/admin/users" class="btn btn-secondary">
+                <i class="fas fa-reply"></i> Kembali
+            </a>
+        </div>
+    </form>
+</div>
+{%endblock%}
+
+{% block js %}
+<script>
+    $(document).ready(function() {
+        $('#id_role').on('change', function() {
+            let id_role = $(this).val();
+            let container = $('#dynamic-selector-container');
+            let select = $('#dynamic-select');
+            let label = $('#dynamic-label');
+            select.html('<option value="">Memuat data...</option>');
+            container.hide();
+            if(id_role === "") {
+                return;
+            }
+            $.ajax({
+                url : "/admin/api/data-role",
+                type : "GET",
+                data : {id_role : id_role},
+                success : response => {
+                    if (response.status)
+                    {
+                        select.html('<option value="">Pilih data</option>');
+                        if (id_role == "9")
+                        {
+                            label.text("Pilih dosen")
+                        }
+                        else if (id_role == "10")
+                        {
+                            label.text("Pilih mahasiswa")
+                        }
+                        else
+                        {
+                            label.text("Pilih data")
+                        }
+                        response.data.forEach(item => {
+                            select.append(
+                                `<option value="${item.id}">${item.nama}</option>`
+                            )
+                        })
+                        container.show()
+                    }
+                    else
+                    {
+                        alert(response.message)
+                    }
+                },
+                error : () => {
+                    alert("Terjadi kesalahan saat mengambil data.")
+                }
+            })
+        })
+    })
+</script>
+{% endblock %}

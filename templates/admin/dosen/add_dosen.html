@@ -1,0 +1,66 @@
+{%extends 'layout/templates.html'%}
+<!--  -->
+{%block content%}
+<div class="card card-info card-outline">
+  <div class="card-header">
+    <h3 class="card-title"><i class="fas fa-plus"></i> Tambah dosen</h3>
+  </div>
+  <form action="{{url_for('dosen.tambah_simpan')}}" method="post">
+    <div class="card-body">
+      <div class="form-group">
+        <label for="nidn">NIDN</label>
+        <input
+          type="text"
+          name="nidn"
+          class="form-control"
+          placeholder="Masukkan nidn....."
+        />
+      </div>
+      <div class="form-group">
+        <label for="nama">Nama</label>
+        <input
+          type="text"
+          name="nama"
+          class="form-control"
+          placeholder="Masukkan nama dosen..."
+        />
+      </div>
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input
+          type="email"
+          name="email"
+          class="form-control"
+          placeholder="Masukkan email aktif dosen...."
+        />
+      </div>
+      <div class="form-group">
+        <label for="no_hp">No Hp</label>
+        <input
+          type="number"
+          name="no_hp"
+          class="form-control"
+          placeholder="Masukkan nomor hp dosen....."
+        />
+      </div>
+      <div class="form-group">
+        <label for="alamat">Alamat</label>
+        <textarea
+          name="alamat"
+          class="form-control"
+          rows="3"
+          placeholder="Masukkan alamat dosen..."
+        ></textarea>
+      </div>
+    </div>
+    <div class="card-footer">
+      <button type="submit" class="btn btn-primary">
+        <i class="fas fa-save"></i> Simpan
+      </button>
+      <a href="{{url_for('dosen.all_dosen')}}" class="btn btn-secondary">
+        <i class="fas fa-reply"></i> Kembali
+      </a>
+    </div>
+  </form>
+</div>
+{%endblock%}

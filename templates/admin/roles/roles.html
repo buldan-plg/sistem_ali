@@ -1,0 +1,50 @@
+{%extends "layout/templates.html"%}
+
+{%block content%}
+<div class="card card-dark">
+    <div class="card-header">
+        <h3 class="card-title">
+            <i class="fa fa-table"></i> {{title}}
+        </h3>
+        <div class="card-tools">
+            <a href="/admin/roles/tambah" class="btn btn-dark">
+                <i class="fas fa-plus"></i> Tambah role
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table id="example1" class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Nama role</th>
+                        <th class="w-50">Deskripsi</th>
+                        <th class="text-center">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for role in roles %}
+                    <tr>
+                        <td>{{loop.index}}</td>
+                        <td>{{role.nama_role}}</td>
+                        <td>{{role.deskripsi}}</td>
+                        <td class="text-center">
+                            <a href="/admin/roles/{{role.id_role}}/edit" class="btn btn-sm btn-warning">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <form action="/admin/roles/{{role.id_role}}/delete" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-danger"
+                                onclick="return confirm('Apakah anda yakin?')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {%endfor%}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{%endblock%}

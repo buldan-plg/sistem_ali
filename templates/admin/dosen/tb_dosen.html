@@ -1,0 +1,59 @@
+{% extends 'layout/templates.html'%}
+<!--  -->
+{%block content%}
+<div class="card card-primary card-outline">
+  <div class="card-header">
+    <h3 class="card-title"><i class="fas fa-table"></i> Data dosen</h3>
+    <div class="card-tools">
+      <a href="{{url_for('dosen.tambah_dosen')}}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Tambah data
+      </a>
+    </div>
+  </div>
+  <div class="card-body">
+    <table class="table table-bordered table-striped" id="example1">
+      <thead>
+        <tr>
+          <th>No</th>
+          <th>NIDN</th>
+          <th>Nama</th>
+          <th>Email</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {%for row in dosen%}
+        <tr>
+          <td>{{loop.index}}</td>
+          <td>{{row.nidn}}</td>
+          <td>{{row.nama_dosen}}</td>
+          <td>{{row.email}}</td>
+          <td>
+            <a
+              href="/admin/dosen/edit/{{row.id_dosen}}"
+              class="btn btn-sm btn-warning"
+              title="edit"
+            >
+              <i class="fas fa-edit"></i>
+            </a>
+            <form
+              action="/admin/dosen/delete/{{row.id_dosen}}"
+              method="post"
+              class="d-inline"
+            >
+              <button
+                class="btn btn-sm btn-danger"
+                title="delete"
+                onclick="confirm('Apakah anda yakin?')"
+              >
+                <i class="fas fa-trash"></i>
+              </button>
+            </form>
+          </td>
+        </tr>
+        {%endfor%}
+      </tbody>
+    </table>
+  </div>
+</div>
+{%endblock%}

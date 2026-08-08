@@ -1,0 +1,176 @@
+{%extends "layout/templates.html"%}
+
+{%block css%}
+<style>
+    .profile-wrapper {
+        max-width: 420px;
+        width: 100%;
+    }
+    .card-primary.card-outline {
+        border-top: 3px solid #007bff;
+    }
+    .profile-header {
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        border-radius: 0.25rem 0.25rem 0 0;
+        padding: 30px 20px 20px;
+        text-align: center;
+        position: relative;
+    }
+    .profile-header::after {
+        content: '';
+        display: block;
+        height: 20px;
+        background: white;
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        border-radius: 50% 50% 0 0;
+    }
+    .profile-avatar {
+        width: 90px;
+        height: 90px;
+        border-radius: 50%;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 12px;
+        border: 4px solid rgba(255,255,255,0.6);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    .profile-avatar i {
+        font-size: 48px;
+        color: #007bff;
+    }
+    .profile-header .name {
+        color: white;
+        font-weight: 700;
+        font-size: 1.2rem;
+        margin-bottom: 2px;
+    }
+    .profile-header .nim {
+        color: rgba(255,255,255,0.85);
+        font-size: 0.85rem;
+    }
+    .badge-angkatan {
+        background: rgba(255,255,255,0.2);
+        color: white;
+        border-radius: 20px;
+        padding: 3px 12px;
+        font-size: 0.75rem;
+        margin-top: 6px;
+        display: inline-block;
+    }
+    .info-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    .info-list li {
+        display: flex;
+        align-items: flex-start;
+        padding: 10px 0;
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 0.9rem;
+    }
+    .info-list li:last-child {
+        border-bottom: none;
+    }
+    .info-list .info-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: #e8f0fe;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 12px;
+        flex-shrink: 0;
+    }
+    .info-list .info-icon i {
+        color: #007bff;
+        font-size: 0.8rem;
+    }
+    .info-list .info-content {
+        flex: 1;
+    }
+    .info-list .info-label {
+        color: #999;
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        line-height: 1;
+        margin-bottom: 2px;
+    }
+    .info-list .info-value {
+        color: #333;
+        font-weight: 600;
+    }
+</style>
+{%endblock%}
+
+{%block content%}
+<div class="d-flex justify-content-center mt-3">
+    <div class="profile-wrapper">
+        <div class="card card-primary card-outline shadow">
+
+            <!-- Header -->
+            <div class="profile-header">
+                <div class="profile-avatar">
+                    <i class="fas fa-user-graduate"></i>
+                </div>
+                <div class="name">{{ mahasiswa.nama }}</div>
+                <div class="nim">NIM: {{ mahasiswa.nim }}</div>
+                <span class="badge-angkatan">
+                    <i class="fas fa-calendar-alt mr-1"></i>Angkatan {{ mahasiswa.angkatan }}
+                </span>
+            </div>
+
+            <!-- Body -->
+            <div class="card-body pt-3">
+                <ul class="info-list">
+                    <li>
+                        <div class="info-icon"><i class="fas fa-venus-mars"></i></div>
+                        <div class="info-content">
+                            <div class="info-label">Jenis Kelamin</div>
+                            <div class="info-value">
+                                {% if mahasiswa.jenis_kelamin == 'L' %}Laki-laki{% else %}Perempuan{% endif %}
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="info-icon"><i class="fas fa-birthday-cake"></i></div>
+                        <div class="info-content">
+                            <div class="info-label">Tanggal Lahir</div>
+                            <div class="info-value">{{ mahasiswa.tanggal_lahir | datetimeformat }}</div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="info-icon"><i class="fas fa-envelope"></i></div>
+                        <div class="info-content">
+                            <div class="info-label">Email</div>
+                            <div class="info-value">{{ mahasiswa.email }}</div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="info-icon"><i class="fas fa-phone"></i></div>
+                        <div class="info-content">
+                            <div class="info-label">No. HP</div>
+                            <div class="info-value">{{ mahasiswa.no_hp }}</div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="info-icon"><i class="fas fa-map-marker-alt"></i></div>
+                        <div class="info-content">
+                            <div class="info-label">Alamat</div>
+                            <div class="info-value">{{ mahasiswa.alamat }}</div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+    </div>
+</div>
+{%endblock%}

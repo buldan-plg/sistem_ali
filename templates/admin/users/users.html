@@ -1,0 +1,58 @@
+{%extends "layout/templates.html"%} {%block content%}
+<div class="card card-pink">
+  <div class="card-header">
+    <h3 class="card-title"><i class="fa fa-table"></i> {{title}}</h3>
+    <div class="card-tools">
+      <a href="/admin/users/tambah" class="btn btn-dark">
+        <i class="fas fa-plus"></i> Tambah user
+      </a>
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="table-responsive">
+      <table id="example1" class="table table-bordered table-stiped">
+        <thead>
+          <tr>
+            <th class="text-center">No</th>
+            <th class="w-40">Nama user</th>
+            <th class="w-50">Username</th>
+            <th>Role</th>
+            <th class="text-center">Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          {%for user in users%}
+          <tr>
+            <td class="text-center">{{loop.index}}</td>
+            <td>
+              {% if user.role.lower() == "admin" %} {{user.nama_dosen}} {% elif
+              user.role.lower() == "mahasiswa": %} {{user.nama_mahasiswa}}
+              {%else:%} Belum ada nama user {%endif%}
+            </td>
+            <td>{{user.username}}</td>
+            <td>{{user.role}}</td>
+            <td class="text-center">
+              <a
+                href="/admin/users/{{user.id_user}}/edit"
+                class="btn btn-sm btn-warning"
+              >
+                <i class="fas fa-edit"></i>
+              </a>
+              <form
+                action="/admin/users/{{user.id_user}}/delete"
+                method="post"
+                class="d-inline"
+              >
+                <button type="submit" class="btn btn-sm btn-danger">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </form>
+            </td>
+          </tr>
+          {%endfor%}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{%endblock%}

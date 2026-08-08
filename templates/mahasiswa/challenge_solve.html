@@ -1,0 +1,546 @@
+{% extends "layout/templates_mhs.html" %}
+{% block body_class %}challenge-solve-page{% endblock %}
+{% block nav_challenge %}active{% endblock %}
+
+{% block css %}
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:     #0a0a0f; --surf:   #111118; --surf2:  #1a1a24;
+  --border: #2a2a3a; --accent: #00ff88; --warn:   #ff6b35;
+  --info:   #38bdf8; --purple: #a78bfa;
+  --text:   #e2e2f0; --muted:  #6b6b8a;
+}
+.challenge-solve-page .content-wrapper { background: var(--bg) !important; padding:0 !important; }
+.challenge-solve-page .content-header  { display:none; }
+.challenge-solve-page .content         { padding:0 !important; }
+.challenge-solve-page .container-fluid { max-width:100% !important; padding:0 !important; }
+.challenge-solve-page .row             { margin:0 !important; }
+
+/* Toolbar */
+.solve-toolbar {
+  position:sticky; top:57px; z-index:99;
+  background:rgba(17,17,24,0.96); backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--border);
+  padding:0.6rem 1.2rem;
+  display:flex; align-items:center; gap:1rem; flex-wrap:wrap;
+}
+.solve-toolbar .back-btn {
+  font-family:'JetBrains Mono',monospace; font-size:0.72rem;
+  color:var(--muted); text-decoration:none;
+  display:flex; align-items:center; gap:0.4rem;
+  transition:color 0.15s;
+}
+.solve-toolbar .back-btn:hover { color:var(--accent); }
+.solve-title {
+  font-family:'Syne',sans-serif; font-size:0.95rem; font-weight:800;
+  color:var(--text); flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.timer-wrap {
+  font-family:'JetBrains Mono',monospace; font-size:0.8rem;
+  display:flex; align-items:center; gap:0.4rem;
+}
+.timer-num { color:var(--accent); font-weight:700; min-width:50px; }
+.timer-num.warn { color:var(--warn); }
+.slot-info { font-family:'JetBrains Mono',monospace; font-size:0.68rem; color:var(--muted); }
+
+/* Layout — sama dengan quiz */
+.solve-layout {
+  display:grid;
+  grid-template-columns: 280px 1fr;
+  height:calc(100vh - 57px - 57px - 48px);
+  overflow:hidden;
+  position:relative; z-index:1;
+}
+
+/* Left panel: detail soal + leaderboard */
+.solve-left {
+  border-right:1px solid var(--border);
+  background:var(--surf);
+  overflow-y:auto;
+  display:flex; flex-direction:column;
+}
+.solve-left::-webkit-scrollbar { width:3px; }
+.solve-left::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+
+.soal-header { padding:1.2rem; border-bottom:1px solid var(--border); }
+.soal-num    { font-family:'JetBrains Mono',monospace; font-size:0.6rem; letter-spacing:2px; text-transform:uppercase; color:var(--muted); margin-bottom:0.3rem; }
+.soal-title  { font-family:'Syne',sans-serif; font-size:1.15rem; font-weight:800; color:var(--text); margin-bottom:0.5rem; }
+.soal-desc   { font-family:'JetBrains Mono',monospace; font-size:0.78rem; color:#aaa; line-height:1.7; }
+.soal-desc code { background:var(--surf2); border:1px solid var(--border); padding:.1em .4em; border-radius:4px; color:var(--accent); }
+.soal-badges { display:flex; gap:0.4rem; margin-top:0.7rem; flex-wrap:wrap; }
+
+/* Creator info */
+.creator-box {
+  padding:0.8rem 1.2rem; border-bottom:1px solid var(--border);
+  font-family:'JetBrains Mono',monospace; font-size:0.68rem;
+}
+.creator-lbl  { font-size:0.58rem; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); margin-bottom:0.3rem; }
+.creator-name { color:var(--text); font-weight:600; }
+
+/* Leaderboard mini */
+.lb-mini { padding:0.8rem 1.2rem; flex:1; }
+.lb-mini-title { font-family:'JetBrains Mono',monospace; font-size:0.6rem; letter-spacing:2px; text-transform:uppercase; color:var(--muted); margin-bottom:0.7rem; }
+.lb-mini-item {
+  display:flex; align-items:center; gap:0.6rem;
+  padding:0.5rem 0; border-bottom:1px solid var(--border);
+  font-family:'JetBrains Mono',monospace; font-size:0.72rem;
+}
+.lb-mini-item:last-child { border-bottom:none; }
+.lb-mini-rank { min-width:20px; text-align:center; font-weight:700; }
+.lb-mini-name { flex:1; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.lb-mini-pt   { color:var(--accent); font-weight:700; }
+
+/* Right: editor area */
+.solve-main {
+  display:grid;
+  grid-template-rows: auto 1fr auto;
+  overflow:hidden;
+  background:var(--bg);
+}
+
+/* Editor toolbar */
+.editor-toolbar {
+  display:flex; align-items:center;
+  padding:0.5rem 1rem;
+  background:var(--surf); border-bottom:1px solid var(--border); gap:0.5rem;
+}
+.dot { width:10px; height:10px; border-radius:50%; }
+.dot-r { background:#ff5f57; } .dot-y { background:#febc2e; } .dot-g { background:#28c840; }
+.lang-tabs { display:flex; gap:0.3rem; margin-left:0.5rem; }
+.lang-tab {
+  font-family:'JetBrains Mono',monospace; font-size:0.7rem; font-weight:700;
+  padding:0.22rem 0.7rem; border:1px solid var(--border); border-radius:5px;
+  background:transparent; color:var(--muted); cursor:pointer; transition:all 0.15s;
+}
+.lang-tab:hover        { color:var(--text); }
+.lang-tab.active       { background:var(--accent); border-color:var(--accent); color:#000; }
+
+/* Editor + output split */
+.editor-split {
+  display:grid;
+  grid-template-columns: 1fr 300px;
+  overflow:hidden;
+}
+#code-editor {
+  background:#0d0d14; color:#e2e2f0;
+  font-family:'JetBrains Mono',monospace; font-size:0.85rem; line-height:1.7;
+  border:none; outline:none; resize:none; padding:1rem 1.3rem;
+  tab-size:4; width:100%; height:100%;
+}
+
+/* Right panel */
+.right-panel {
+  background:var(--surf); border-left:1px solid var(--border);
+  overflow-y:auto; display:flex; flex-direction:column;
+}
+.right-panel::-webkit-scrollbar { width:3px; }
+.right-panel::-webkit-scrollbar-thumb { background:var(--border); }
+.panel-sec { padding:0.9rem 1rem; border-bottom:1px solid var(--border); }
+.panel-lbl { font-family:'JetBrains Mono',monospace; font-size:0.58rem; letter-spacing:2px; text-transform:uppercase; color:var(--muted); margin-bottom:0.5rem; }
+#output { font-family:'JetBrains Mono',monospace; font-size:0.78rem; line-height:1.6; white-space:pre-wrap; color:var(--text); min-height:50px; }
+#output.has-error { color:var(--warn); }
+
+.vld-box { border-radius:8px; padding:0.7rem 0.85rem; display:none; font-family:'JetBrains Mono',monospace; font-size:0.75rem; }
+.vld-box.show    { display:block; }
+.vld-box.correct { background:rgba(0,255,136,0.07); border:1px solid rgba(0,255,136,0.25); }
+.vld-box.wrong   { background:rgba(255,107,53,0.07); border:1px solid rgba(255,107,53,0.25); }
+.vld-msg  { font-weight:700; font-size:0.85rem; margin-bottom:0.3rem; }
+.vld-box.correct .vld-msg { color:var(--accent); }
+.vld-box.wrong   .vld-msg { color:var(--warn); }
+.vld-det  { font-size:0.68rem; color:var(--muted); line-height:1.6; }
+.vld-det strong { color:var(--text); }
+
+.hint-box { background:rgba(124,58,237,0.07); border:1px solid rgba(124,58,237,0.25); border-radius:8px; padding:0.7rem 0.85rem; font-family:'JetBrains Mono',monospace; font-size:0.75rem; color:#c4b5fd; display:none; line-height:1.6; }
+.hint-box.show { display:block; }
+.hint-cnt { font-size:0.6rem; color:var(--muted); margin-top:0.3rem; }
+.panel-ph { font-family:'JetBrains Mono',monospace; font-size:0.7rem; color:var(--muted); }
+
+/* Solved overlay */
+.solved-overlay {
+  position:absolute; inset:0;
+  background:rgba(0,255,136,0.04);
+  border:2px solid rgba(0,255,136,0.3);
+  display:none; align-items:center; justify-content:center;
+  z-index:10; border-radius:0;
+  pointer-events:none;
+}
+.solved-overlay.show { display:flex; }
+.solved-badge {
+  background:rgba(0,255,136,0.12); border:1px solid rgba(0,255,136,0.4);
+  border-radius:12px; padding:1.2rem 2rem; text-align:center;
+  pointer-events:auto;
+}
+.solved-badge-icon { font-size:2.5rem; margin-bottom:0.5rem; }
+.solved-badge-text { font-family:'Syne',sans-serif; font-size:1.4rem; font-weight:800; color:var(--accent); }
+.solved-badge-sub  { font-family:'JetBrains Mono',monospace; font-size:0.8rem; color:var(--muted); margin-top:0.4rem; }
+.solved-badge-pt   { font-family:'Syne',sans-serif; font-size:1rem; font-weight:800; color:var(--text); margin-top:0.5rem; }
+
+/* Bottom bar */
+.bottom-bar {
+  padding:0.7rem 1.2rem;
+  background:var(--surf); border-top:1px solid var(--border);
+  display:flex; gap:0.7rem; align-items:center;
+}
+.qz-btn {
+  font-family:'JetBrains Mono',monospace; font-size:0.75rem; font-weight:700;
+  padding:0.5rem 1.1rem; border-radius:6px; border:none; cursor:pointer;
+  transition:all 0.15s; text-transform:uppercase; letter-spacing:0.5px;
+  display:inline-flex; align-items:center; gap:0.35rem;
+}
+.qz-btn:disabled { opacity:0.5; cursor:not-allowed; }
+.btn-run   { background:var(--accent); color:#000; }
+.btn-run:hover:not(:disabled)   { background:#00e07a; transform:translateY(-1px); box-shadow:0 4px 16px rgba(0,255,136,.25); }
+.btn-hint  { background:transparent; border:1px solid rgba(124,58,237,0.4); color:var(--purple); }
+.btn-hint:hover:not(:disabled)  { background:rgba(124,58,237,0.1); }
+.btn-reset { background:transparent; border:1px solid var(--border); color:var(--muted); }
+.btn-reset:hover:not(:disabled) { border-color:var(--warn); color:var(--warn); }
+.run-info  { margin-left:auto; font-family:'JetBrains Mono',monospace; font-size:0.65rem; color:var(--muted); }
+
+/* Badges */
+.bdg { display:inline-block; font-family:'JetBrains Mono',monospace; font-size:0.56rem; font-weight:700; padding:0.12rem 0.45rem; border-radius:4px; text-transform:uppercase; letter-spacing:0.5px; }
+.bdg-easy   { background:rgba(0,255,136,0.12); color:#00ff88; }
+.bdg-medium { background:rgba(255,190,11,0.12); color:#ffbe0b; }
+.bdg-hard   { background:rgba(255,107,53,0.12); color:#ff6b35; }
+
+@media(max-width:768px) {
+  .solve-layout { grid-template-columns:1fr; height:auto; overflow:visible; }
+  .solve-left   { max-height:240px; }
+  .editor-split { grid-template-columns:1fr; }
+  .right-panel  { border-left:none; border-top:1px solid var(--border); max-height:none; }
+  #code-editor  { min-height:240px; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Toolbar -->
+<div class="solve-toolbar">
+  <a class="back-btn" href="/mahasiswa/challenge">
+    <i class="fas fa-arrow-left"></i> Challenge
+  </a>
+  <div class="solve-title" id="ch-title">Memuat...</div>
+  <div class="timer-wrap">
+    ⏱ <span class="timer-num" id="timer-disp">—</span>
+  </div>
+  <div class="slot-info" id="slot-info"></div>
+</div>
+
+<!-- Layout -->
+<div class="solve-layout">
+
+  <!-- Left panel -->
+  <div class="solve-left">
+    <div class="soal-header" id="soal-header">
+      <div class="soal-num">Challenge</div>
+      <div class="soal-title" id="s-title">Memuat...</div>
+      <div class="soal-desc" id="s-desc"></div>
+      <div class="soal-badges" id="s-badges"></div>
+    </div>
+
+    <div class="creator-box">
+      <div class="creator-lbl">Dibuat oleh</div>
+      <div class="creator-name" id="c-creator">—</div>
+    </div>
+
+    <div class="lb-mini">
+      <div class="lb-mini-title">🏆 Solver</div>
+      <div id="lb-mini-list">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--muted)">Belum ada solver</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main editor -->
+  <div class="solve-main" style="position:relative">
+
+    <!-- Solved overlay -->
+    <div class="solved-overlay" id="solved-overlay">
+      <div class="solved-badge">
+        <div class="solved-badge-icon">🎉</div>
+        <div class="solved-badge-text">Challenge Selesai!</div>
+        <div class="solved-badge-sub" id="solved-rank"></div>
+        <div class="solved-badge-pt" id="solved-pt"></div>
+        <button class="qz-btn btn-reset" style="margin-top:1rem" onclick="dismissOverlay()">
+          Lihat Output
+        </button>
+      </div>
+    </div>
+
+    <!-- Editor toolbar -->
+    <div class="editor-toolbar">
+      <div class="dot dot-r"></div>
+      <div class="dot dot-y"></div>
+      <div class="dot dot-g"></div>
+      <div class="lang-tabs" id="lang-tabs"></div>
+    </div>
+
+    <!-- Editor + output -->
+    <div class="editor-split">
+      <textarea id="code-editor" spellcheck="false"
+        placeholder="// Pilih bahasa dan mulai coding..."></textarea>
+
+      <div class="right-panel">
+        <div class="panel-sec">
+          <div class="panel-lbl">Output</div>
+          <pre id="output">—</pre>
+        </div>
+        <div class="panel-sec">
+          <div class="panel-lbl">Validasi</div>
+          <div class="vld-box" id="vld-box">
+            <div class="vld-msg" id="vld-msg"></div>
+            <div class="vld-det" id="vld-det"></div>
+          </div>
+          <div class="panel-ph" id="vld-ph">Jalankan kode untuk validasi</div>
+        </div>
+        <div class="panel-sec">
+          <div class="panel-lbl">Hint</div>
+          <div class="hint-box" id="hint-box">
+            <div id="hint-text"></div>
+            <div class="hint-cnt" id="hint-cnt"></div>
+          </div>
+          <div class="panel-ph" id="hint-ph">Klik Hint jika butuh petunjuk</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom bar -->
+    <div class="bottom-bar">
+      <button class="qz-btn btn-run"   id="btn-run"   onclick="runCode()" disabled>
+        <i class="fas fa-play"></i> Run
+      </button>
+      <button class="qz-btn btn-hint"  id="btn-hint"  onclick="getHint()" disabled>
+        <i class="fas fa-lightbulb"></i> Hint
+      </button>
+      <button class="qz-btn btn-reset" id="btn-reset" onclick="resetCode()" disabled>
+        <i class="fas fa-undo"></i> Reset
+      </button>
+      <span class="run-info" id="run-info">Ctrl+Enter untuk Run</span>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+const CH_ID    = {{ id_challenge }};
+let challenge  = null;
+let currentLang = 'php';
+let hintIndex  = 0;
+let startTime  = Date.now();
+let hintUsed   = 0;
+let isSolved   = false;
+
+// ─── Boot ─────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  loadChallenge();
+  document.getElementById('code-editor').addEventListener('keydown', e => {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      const s = e.target.selectionStart;
+      e.target.value = e.target.value.substring(0,s)+'    '+e.target.value.substring(e.target.selectionEnd);
+      e.target.selectionStart = e.target.selectionEnd = s + 4;
+    }
+    if (e.ctrlKey && e.key === 'Enter') runCode();
+  });
+  document.getElementById('code-editor').addEventListener('paste', e => e.preventDefault());
+  startTimer();
+});
+
+// ─── Load challenge ───────────────────────────────────
+async function loadChallenge() {
+  try {
+    const res  = await fetch(`/api/challenges/${CH_ID}`);
+    const data = await res.json();
+    if (data.error) { alert(data.error); return; }
+
+    challenge = data;
+    document.getElementById('ch-title').textContent  = data.judul;
+    document.getElementById('s-title').textContent   = data.judul;
+    document.getElementById('c-creator').textContent = data.creator_name || '—';
+
+    // Desc
+    const desc = (data.deskripsi||'')
+      .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+      .replace(/`(.*?)`/g,'<code>$1</code>')
+      .replace(/\n/g,'<br>');
+    document.getElementById('s-desc').innerHTML = desc;
+
+    // Badges
+    document.getElementById('s-badges').innerHTML =
+      `<span class="bdg bdg-${data.level}">${data.level}</span>`;
+
+    // Timer info
+    const hrs = data.hours_remaining || 0;
+    document.getElementById('slot-info').textContent =
+      `${data.total_solvers||0}/10 solver · ${Math.max(0,hrs)}j tersisa`;
+
+    // Cek apakah sudah solved
+    if (data.is_solved) {
+      isSolved = true;
+      showSolvedState('Sudah diselesaikan', null);
+    }
+
+    // Lang tabs
+    const langs = data.languages || ['php','javascript','python'];
+    buildLangTabs(langs);
+    setLang(langs[0]);
+
+    // Enable buttons
+    ['btn-run','btn-hint','btn-reset'].forEach(id =>
+      document.getElementById(id).disabled = isSolved
+    );
+
+    // Load leaderboard
+    loadLeaderboard();
+  } catch(e) { console.error(e); }
+}
+
+// ─── Lang tabs ────────────────────────────────────────
+function buildLangTabs(langs) {
+  const el = document.getElementById('lang-tabs');
+  el.innerHTML = langs.map(l =>
+    `<button class="lang-tab${l===currentLang?' active':''}" onclick="setLang('${l}')">${l.toUpperCase()}</button>`
+  ).join('');
+}
+
+function setLang(lang) {
+  currentLang = lang;
+  document.querySelectorAll('.lang-tab').forEach(t =>
+    t.classList.toggle('active', t.textContent.toLowerCase() === lang)
+  );
+  document.getElementById('code-editor').value =
+    challenge?.starter_code?.[lang] || '';
+}
+
+// ─── Timer ────────────────────────────────────────────
+function startTimer() {
+  setInterval(() => {
+    const sec = Math.floor((Date.now() - startTime) / 1000);
+    const m   = String(Math.floor(sec/60)).padStart(2,'0');
+    const s   = String(sec%60).padStart(2,'0');
+    const el  = document.getElementById('timer-disp');
+    el.textContent = `${m}:${s}`;
+    el.className   = 'timer-num' + (sec > 300 ? ' warn' : '');
+  }, 1000);
+}
+
+// ─── Run ──────────────────────────────────────────────
+async function runCode() {
+  if (!challenge || isSolved) return;
+  const code = document.getElementById('code-editor').value;
+  const btn  = document.getElementById('btn-run');
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Running...';
+  btn.disabled  = true;
+
+  const waktu = Math.floor((Date.now()-startTime)/1000);
+
+  try {
+    const res  = await fetch(`/api/challenges/${CH_ID}/run`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ language:currentLang, code, hint_used:hintUsed, waktu_selesai:waktu })
+    });
+    const data = await res.json();
+
+    const outEl = document.getElementById('output');
+    outEl.textContent = data.output || '(tidak ada output)';
+    outEl.className   = '';
+
+    if (data.result) showValidation(data.is_correct, data.result);
+    if (data.is_correct && data.result?.status !== 'already_solved') {
+      isSolved = true;
+      setTimeout(() => {
+        const r   = data.result;
+        const rank = r.solver_rank;
+        const pt   = r.point_earned;
+        showSolvedState(
+          rank ? `Kamu solver ke-${rank}!` : 'Berhasil!',
+          rank && rank <= 10 ? `+${pt} point didapat` : 'Slot penuh, tidak dapat point'
+        );
+        loadLeaderboard();
+      }, 600);
+    }
+
+    document.getElementById('run-info').textContent = new Date().toLocaleTimeString('id-ID');
+  } catch(e) {
+    document.getElementById('output').textContent = '❌ Gagal koneksi server';
+  } finally {
+    btn.innerHTML = '<i class="fas fa-play"></i> Run';
+    btn.disabled  = false;
+  }
+}
+
+// ─── Validation ───────────────────────────────────────
+function showValidation(correct, result) {
+  const box = document.getElementById('vld-box');
+  const msg = document.getElementById('vld-msg');
+  const det = document.getElementById('vld-det');
+  box.className = `vld-box show ${correct ? 'correct' : 'wrong'}`;
+  msg.textContent = result.message || (correct ? '✅ Benar!' : '❌ Salah!');
+  det.innerHTML   = !correct && result.expected
+    ? `<strong>Expected:</strong> ${esc(result.expected)}<br><strong>Got:</strong> ${esc(result.actual)}`
+    : '';
+  document.getElementById('vld-ph').style.display = 'none';
+}
+
+// ─── Hint ─────────────────────────────────────────────
+async function getHint() {
+  if (!challenge) return;
+  // Challenge tidak punya hint dari DB — tampilkan pesan
+  const box = document.getElementById('hint-box');
+  document.getElementById('hint-text').textContent = '💡 Tidak ada hint untuk challenge ini. Coba pecahkan sendiri!';
+  box.classList.add('show');
+  document.getElementById('hint-ph').style.display = 'none';
+  hintUsed = 1;
+}
+
+// ─── Reset ────────────────────────────────────────────
+function resetCode() {
+  if (!challenge) return;
+  document.getElementById('code-editor').value = challenge.starter_code?.[currentLang] || '';
+  document.getElementById('output').textContent  = '—';
+  document.getElementById('output').className    = '';
+  document.getElementById('vld-box').className   = 'vld-box';
+  document.getElementById('vld-ph').style.display = '';
+  document.getElementById('hint-box').classList.remove('show');
+  document.getElementById('hint-ph').style.display = '';
+  document.getElementById('run-info').textContent  = 'Ctrl+Enter untuk Run';
+}
+
+// ─── Solved state ─────────────────────────────────────
+function showSolvedState(rankText, ptText) {
+  document.getElementById('solved-rank').textContent = rankText || '';
+  document.getElementById('solved-pt').textContent   = ptText   || '';
+  document.getElementById('solved-overlay').classList.add('show');
+}
+function dismissOverlay() {
+  document.getElementById('solved-overlay').classList.remove('show');
+}
+
+// ─── Leaderboard mini ─────────────────────────────────
+async function loadLeaderboard() {
+  try {
+    const res  = await fetch(`/api/challenges/${CH_ID}/leaderboard`);
+    const list = await res.json();
+    const el   = document.getElementById('lb-mini-list');
+    if (!list.length) {
+      el.innerHTML = '<div style="font-family:\'JetBrains Mono\',monospace;font-size:.72rem;color:var(--muted)">Belum ada solver</div>';
+      return;
+    }
+    const medals = {1:'🥇',2:'🥈',3:'🥉'};
+    el.innerHTML = list.slice(0,10).map(r =>
+      `<div class="lb-mini-item">
+        <span class="lb-mini-rank">${medals[r.solver_rank]||'#'+r.solver_rank}</span>
+        <span class="lb-mini-name">${esc(r.nama_mahasiswa)}</span>
+        <span class="lb-mini-pt">${r.point_earned}pt</span>
+      </div>`
+    ).join('');
+  } catch(e) {}
+}
+
+function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+</script>
+{% endblock %}
