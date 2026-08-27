@@ -1,0 +1,55 @@
+/* ============================================================
+   3. TOOLBAR (Filter + Progress)
+   ============================================================ */
+
+.quiz-toolbar {
+  position: sticky;
+  top: 57px;
+  z-index: 99;
+  background: var(--qz-toolbar-bg);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--qz-border);
+  padding: 0.6rem 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+.quiz-toolbar select {
+  background: var(--qz-surface2);
+  border: 1px solid var(--qz-border);
+  color: var(--qz-text);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.72rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 6px;
+  cursor: pointer;
+  outline: none;
+}
+.quiz-toolbar select:focus {
+  border-color: var(--qz-accent);
+}
+.quiz-toolbar-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.quiz-progress-text {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.72rem;
+  color: var(--qz-muted);
+}
+.quiz-progress-bar-wrap {
+  width: 120px;
+  height: 4px;
+  background: var(--qz-border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.quiz-progress-bar {
+  height: 100%;
+  background: var(--qz-accent);
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}

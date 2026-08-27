@@ -1,0 +1,72 @@
+/* ============================================================
+   7. CODE EDITOR PANE
+   ============================================================ */
+
+.quiz-editor-pane {
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--qz-border);
+}
+.editor-toolbar {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  background: var(--qz-surface);
+  border-bottom: 1px solid var(--qz-border);
+  gap: 0.5rem;
+}
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+.dot-r {
+  background: var(--qz-dot-r);
+}
+.dot-y {
+  background: var(--qz-dot-y);
+}
+.dot-g {
+  background: var(--qz-dot-g);
+}
+
+.lang-tabs {
+  display: flex;
+  gap: 0.3rem;
+  margin-left: 0.6rem;
+}
+.lang-tab {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.7rem;
+  padding: 0.2rem 0.65rem;
+  border: 1px solid var(--qz-border);
+  border-radius: 5px;
+  background: transparent;
+  color: var(--qz-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.lang-tab:hover {
+  color: var(--qz-text);
+  border-color: var(--qz-muted);
+}
+.lang-tab.active {
+  background: var(--qz-accent);
+  border-color: var(--qz-accent);
+  color: var(--qz-accent-contrast);
+  font-weight: 700;
+}
+
+#code-editor {
+  flex: 1;
+  background: var(--qz-editor-bg);
+  color: var(--qz-editor-text);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.85rem;
+  line-height: 1.7;
+  border: none;
+  outline: none;
+  resize: none;
+  padding: 1rem 1.3rem;
+  tab-size: 4;
+}

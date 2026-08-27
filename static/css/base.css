@@ -1,0 +1,52 @@
+/* ============================================================
+   2. BASE / PAGE OVERRIDE & SCROLLBAR
+   ============================================================ */
+
+.quiz-page .content-wrapper {
+  background: var(--qz-bg) !important;
+  padding: 0 !important;
+  min-height: calc(100vh - 57px - 57px);
+  transition: background 0.2s ease;
+}
+.quiz-page .content-header {
+  display: none;
+}
+.quiz-page .content {
+  padding: 0 !important;
+}
+.quiz-page .container {
+  max-width: 100% !important;
+  padding: 0 !important;
+}
+.quiz-page .row {
+  margin: 0 !important;
+}
+
+/* Grid background */
+.quiz-page .content-wrapper::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--qz-accent-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--qz-accent-grid) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Custom Scrollbar */
+.quiz-sidebar::-webkit-scrollbar,
+.quiz-right-panel::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+.quiz-sidebar::-webkit-scrollbar-track,
+.quiz-right-panel::-webkit-scrollbar-track {
+  background: var(--qz-bg);
+}
+.quiz-sidebar::-webkit-scrollbar-thumb,
+.quiz-right-panel::-webkit-scrollbar-thumb {
+  background: var(--qz-border);
+  border-radius: 2px;
+}

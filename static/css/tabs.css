@@ -1,0 +1,75 @@
+/* ============================================================
+   CUSTOM QUIZ TABS
+   ============================================================ */
+
+/* ── Container Header Tab ── */
+.qz-tabs-header {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--qz-border);
+  background: var(--qz-surface-2);
+  padding: 0.5rem 0.8rem 0 0.8rem;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+
+/* ── Button Item Tab ── */
+.qz-tab-btn {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 0.6rem 1.2rem;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--qz-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  outline: none;
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+}
+
+.qz-tab-btn:hover {
+  color: var(--qz-text);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.qz-tab-btn.active {
+  color: var(--qz-accent);
+  border-bottom-color: var(--qz-accent);
+  background: var(--qz-surface);
+}
+
+/* ── Content Tab Pane ── */
+.qz-tab-content {
+  background: var(--qz-surface);
+  border: 1px solid var(--qz-border);
+  border-top: none;
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+  padding: 1.2rem;
+}
+
+.qz-tab-pane {
+  display: none;
+}
+
+.qz-tab-pane.active {
+  display: block;
+  animation: qzFadeIn 0.2s ease-in-out;
+}
+
+@keyframes qzFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

@@ -1,0 +1,100 @@
+/* ============================================================
+   8. RIGHT PANEL (Output, Validation, Hint)
+   ============================================================ */
+
+.quiz-right-panel {
+  display: flex;
+  flex-direction: column;
+  background: var(--qz-surface);
+  overflow-y: auto;
+}
+.panel-section {
+  padding: 0.9rem 1.1rem;
+  border-bottom: 1px solid var(--qz-border);
+}
+.panel-label {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.6rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--qz-muted);
+  margin-bottom: 0.6rem;
+}
+#output {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.8rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  color: var(--qz-text);
+  min-height: 50px;
+}
+#output.has-error {
+  color: var(--qz-warn);
+}
+
+/* Validation box */
+.validation-box {
+  border-radius: 8px;
+  padding: 0.75rem 0.9rem;
+  font-size: 0.78rem;
+  line-height: 1.6;
+  display: none;
+  font-family: "JetBrains Mono", monospace;
+}
+.validation-box.show {
+  display: block;
+}
+.validation-box.correct {
+  background: var(--qz-accent-tint-strong);
+  border: 1px solid var(--qz-accent-tint-border);
+}
+.validation-box.wrong {
+  background: var(--qz-warn-tint);
+  border: 1px solid var(--qz-warn-tint-border);
+}
+.validation-msg {
+  font-weight: 700;
+  font-size: 0.88rem;
+  margin-bottom: 0.4rem;
+}
+.validation-box.correct .validation-msg {
+  color: var(--qz-accent);
+}
+.validation-box.wrong .validation-msg {
+  color: var(--qz-warn);
+}
+.validation-detail {
+  font-size: 0.7rem;
+  color: var(--qz-muted);
+}
+.validation-detail strong {
+  color: var(--qz-text);
+}
+
+/* Hint box */
+.hint-box {
+  background: var(--qz-hint-bg);
+  border: 1px solid var(--qz-hint-border);
+  border-radius: 8px;
+  padding: 0.75rem 0.9rem;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.78rem;
+  color: var(--qz-hint-text);
+  line-height: 1.6;
+  display: none;
+  margin-bottom: 0.5rem;
+}
+.hint-box.show {
+  display: block;
+}
+.hint-counter {
+  font-size: 0.62rem;
+  color: var(--qz-muted);
+  margin-top: 0.3rem;
+}
+
+.panel-placeholder {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.72rem;
+  color: var(--qz-muted);
+}

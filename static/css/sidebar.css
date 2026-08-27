@@ -1,0 +1,89 @@
+/* ============================================================
+   5. SIDEBAR, QUESTION CARDS & BADGES
+   ============================================================ */
+
+.quiz-sidebar {
+  border-right: 1px solid var(--qz-border);
+  background: var(--qz-surface);
+  overflow-y: auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.quiz-sidebar-title {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.62rem;
+  letter-spacing: 2px;
+  color: var(--qz-muted);
+  text-transform: uppercase;
+  margin-bottom: 0.6rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--qz-border);
+}
+
+.q-card {
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--qz-border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+  background: var(--qz-surface2);
+  position: relative;
+  overflow: hidden;
+  font-family: "JetBrains Mono", monospace;
+}
+.q-card:hover {
+  border-color: var(--qz-accent);
+  transform: translateX(3px);
+}
+.q-card.active {
+  border-color: var(--qz-accent);
+  background: var(--qz-accent-tint);
+}
+.q-card.solved::after {
+  content: "✓";
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--qz-accent);
+}
+.q-card-title {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--qz-text);
+  margin-bottom: 0.3rem;
+  padding-right: 1.2rem;
+}
+.q-card-meta {
+  display: flex;
+  gap: 0.4rem;
+}
+
+/* Badges */
+.qz-badge {
+  font-size: 0.58rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 700;
+  font-family: "JetBrains Mono", monospace;
+}
+.qz-badge-easy {
+  background: var(--qz-easy-bg);
+  color: var(--qz-easy);
+}
+.qz-badge-medium {
+  background: var(--qz-medium-bg);
+  color: var(--qz-medium);
+}
+.qz-badge-hard {
+  background: var(--qz-hard-bg);
+  color: var(--qz-hard);
+}
+.qz-badge-cat {
+  background: var(--qz-cat-bg);
+  color: var(--qz-cat-text);
+}

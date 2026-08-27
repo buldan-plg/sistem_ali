@@ -1,0 +1,164 @@
+/* ============================================================
+   1. THEME VARIABLES
+   ============================================================ */
+
+/* --- Default (fallback) & Dark mode --- */
+:root,
+[data-theme="dark"] {
+  --qz-bg: #0a0a0f;
+  --qz-surface: #111118;
+  --qz-surface2: #1a1a24;
+  --qz-border: #2a2a3a;
+
+  --qz-accent: #00ff88;
+  --qz-accent-contrast: #000000;
+  --qz-accent-hover: #00e07a;
+  --qz-warn: #ff6b35;
+
+  --qz-text: #e2e2f0;
+  --qz-text-soft: #aaaaaa;
+  --qz-muted: #6b6b8a;
+
+  --qz-easy: #00ff88;
+  --qz-medium: #ffbe0b;
+  --qz-hard: #ff6b35;
+
+  --qz-cat-bg: rgba(124, 58, 237, 0.2);
+  --qz-cat-text: #a78bfa;
+
+  --qz-easy-bg: rgba(0, 255, 136, 0.15);
+  --qz-medium-bg: rgba(255, 190, 11, 0.15);
+  --qz-hard-bg: rgba(255, 107, 53, 0.15);
+
+  --qz-accent-tint: rgba(0, 255, 136, 0.06);
+  --qz-accent-tint-strong: rgba(0, 255, 136, 0.08);
+  --qz-accent-tint-border: rgba(0, 255, 136, 0.3);
+  --qz-accent-grid: rgba(0, 255, 136, 0.025);
+
+  --qz-warn-tint: rgba(255, 107, 53, 0.08);
+  --qz-warn-tint-border: rgba(255, 107, 53, 0.3);
+
+  --qz-hint-bg: rgba(124, 58, 237, 0.08);
+  --qz-hint-border: rgba(124, 58, 237, 0.25);
+  --qz-hint-text: #c4b5fd;
+  --qz-hint-border-strong: #7c3aed;
+
+  --qz-editor-bg: #0d0d14;
+  --qz-editor-text: #e2e2f0;
+
+  --qz-toolbar-bg: rgba(17, 17, 24, 0.95);
+
+  --qz-shadow-accent: rgba(0, 255, 136, 0.25);
+
+  --qz-dot-r: #ff5f57;
+  --qz-dot-y: #febc2e;
+  --qz-dot-g: #28c840;
+
+  color-scheme: dark;
+}
+
+/* --- Light mode --- */
+[data-theme="light"] {
+  --qz-bg: #f5f5f7;
+  --qz-surface: #ffffff;
+  --qz-surface2: #eeeef2;
+  --qz-border: #dcdce3;
+
+  --qz-accent: #009e5c;
+  --qz-accent-contrast: #ffffff;
+  --qz-accent-hover: #00b368;
+  --qz-warn: #d94f1e;
+
+  --qz-text: #1a1a24;
+  --qz-text-soft: #4a4a55;
+  --qz-muted: #7a7a8c;
+
+  --qz-easy: #00915a;
+  --qz-medium: #b8860b;
+  --qz-hard: #d94f1e;
+
+  --qz-cat-bg: rgba(124, 58, 237, 0.12);
+  --qz-cat-text: #6d28d9;
+
+  --qz-easy-bg: rgba(0, 145, 90, 0.1);
+  --qz-medium-bg: rgba(184, 134, 11, 0.12);
+  --qz-hard-bg: rgba(217, 79, 30, 0.1);
+
+  --qz-accent-tint: rgba(0, 158, 92, 0.07);
+  --qz-accent-tint-strong: rgba(0, 158, 92, 0.1);
+  --qz-accent-tint-border: rgba(0, 158, 92, 0.35);
+  --qz-accent-grid: rgba(0, 158, 92, 0.04);
+
+  --qz-warn-tint: rgba(217, 79, 30, 0.08);
+  --qz-warn-tint-border: rgba(217, 79, 30, 0.3);
+
+  --qz-hint-bg: rgba(124, 58, 237, 0.06);
+  --qz-hint-border: rgba(124, 58, 237, 0.2);
+  --qz-hint-text: #5b21b6;
+  --qz-hint-border-strong: #7c3aed;
+
+  --qz-editor-bg: #fbfbfd;
+  --qz-editor-text: #1a1a24;
+
+  --qz-toolbar-bg: rgba(255, 255, 255, 0.92);
+
+  --qz-shadow-accent: rgba(0, 158, 92, 0.2);
+
+  --qz-dot-r: #ff5f57;
+  --qz-dot-y: #febc2e;
+  --qz-dot-g: #28c840;
+
+  color-scheme: light;
+}
+
+/* --- Ikuti preferensi sistem kalau data-theme tidak di-set --- */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) {
+    --qz-bg: #f5f5f7;
+    --qz-surface: #ffffff;
+    --qz-surface2: #eeeef2;
+    --qz-border: #dcdce3;
+
+    --qz-accent: #009e5c;
+    --qz-accent-contrast: #ffffff;
+    --qz-accent-hover: #00b368;
+    --qz-warn: #d94f1e;
+
+    --qz-text: #1a1a24;
+    --qz-text-soft: #4a4a55;
+    --qz-muted: #7a7a8c;
+
+    --qz-easy: #00915a;
+    --qz-medium: #b8860b;
+    --qz-hard: #d94f1e;
+
+    --qz-cat-bg: rgba(124, 58, 237, 0.12);
+    --qz-cat-text: #6d28d9;
+
+    --qz-easy-bg: rgba(0, 145, 90, 0.1);
+    --qz-medium-bg: rgba(184, 134, 11, 0.12);
+    --qz-hard-bg: rgba(217, 79, 30, 0.1);
+
+    --qz-accent-tint: rgba(0, 158, 92, 0.07);
+    --qz-accent-tint-strong: rgba(0, 158, 92, 0.1);
+    --qz-accent-tint-border: rgba(0, 158, 92, 0.35);
+    --qz-accent-grid: rgba(0, 158, 92, 0.04);
+
+    --qz-warn-tint: rgba(217, 79, 30, 0.08);
+    --qz-warn-tint-border: rgba(217, 79, 30, 0.3);
+
+    --qz-hint-bg: rgba(124, 58, 237, 0.06);
+    --qz-hint-border: rgba(124, 58, 237, 0.2);
+    --qz-hint-text: #5b21b6;
+    --qz-hint-border-strong: #7c3aed;
+
+    --qz-editor-bg: #fbfbfd;
+    --qz-editor-text: #1a1a24;
+
+    --qz-toolbar-bg: rgba(255, 255, 255, 0.92);
+
+    --qz-shadow-accent: rgba(0, 158, 92, 0.2);
+
+    color-scheme: light;
+  }
+}

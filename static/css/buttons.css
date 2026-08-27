@@ -1,0 +1,65 @@
+/* ============================================================
+   9. BUTTONS & STATUS BAR
+   ============================================================ */
+
+.quiz-bottom-bar {
+  padding: 0.7rem 1.5rem;
+  background: var(--qz-surface);
+  border-top: 1px solid var(--qz-border);
+  display: flex;
+  gap: 0.7rem;
+  align-items: center;
+}
+.qz-btn {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.5rem 1.2rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.qz-btn-run {
+  background: var(--qz-accent);
+  color: var(--qz-accent-contrast);
+}
+.qz-btn-run:hover {
+  background: var(--qz-accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px var(--qz-shadow-accent);
+}
+.qz-btn-run:active {
+  transform: translateY(0);
+}
+.qz-btn-run.loading {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+.qz-btn-hint {
+  background: transparent;
+  border: 1px solid var(--qz-hint-border-strong);
+  color: var(--qz-hint-text);
+  opacity: 0.9;
+}
+.qz-btn-hint:hover {
+  background: var(--qz-hint-bg);
+  border-color: var(--qz-hint-border-strong);
+}
+.qz-btn-reset {
+  background: transparent;
+  border: 1px solid var(--qz-border);
+  color: var(--qz-muted);
+}
+.qz-btn-reset:hover {
+  border-color: var(--qz-warn);
+  color: var(--qz-warn);
+}
+.run-status {
+  margin-left: auto;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.68rem;
+  color: var(--qz-muted);
+}
