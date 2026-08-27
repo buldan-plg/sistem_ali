@@ -1,346 +1,12 @@
-{% extends "layout/templates_mhs.html" %}
-{% block body_class %}dashboard-page{% endblock %}
+{% extends "layout/templates_mhs.html" %} {% block body_class %}dashboard-page{%
+endblock %} {% block css %}
+<link
+  href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@700;800&display=swap"
+  rel="stylesheet"
+/>
 
-{% block css %}
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
-<style>
-:root {
-  --bg:     #0a0a0f;
-  --surf:   #111118;
-  --surf2:  #1a1a24;
-  --border: #2a2a3a;
-  --accent: #00ff88;
-  --warn:   #ff6b35;
-  --info:   #38bdf8;
-  --gold:   #fbbf24;
-  --silver: #94a3b8;
-  --bronze: #cd7c3a;
-  --purple: #a78bfa;
-  --text:   #e2e2f0;
-  --muted:  #6b6b8a;
-}
-
-.dashboard-page .content-wrapper { background: var(--bg) !important; }
-.dashboard-page .content         { padding: 1.5rem !important; }
-.dashboard-page .content-header  {
-  background: var(--surf) !important;
-  border-bottom: 1px solid var(--border);
-}
-.dashboard-page .content-header h1 {
-  font-family: 'Syne', sans-serif;
-  font-size: 1.3rem; font-weight: 800; color: var(--text);
-}
-.dashboard-page .breadcrumb-item a      { color: var(--accent); }
-.dashboard-page .breadcrumb-item.active { color: var(--muted); }
-
-*, *::before, *::after { box-sizing: border-box; }
-
-/* ── Grid layout ── */
-.dash-grid {
-  display: grid;
-  grid-template-columns: 1fr 360px;
-  grid-template-rows: auto auto 1fr;
-  gap: 1.2rem;
-}
-
-/* ── Stat cards (top row, full width) ── */
-.stat-row {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
-}
-.stat-card {
-  background: var(--surf);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 1.1rem 1.3rem;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  position: relative;
-  overflow: hidden;
-  transition: border-color 0.2s, transform 0.2s;
-}
-.stat-card:hover { border-color: var(--accent); transform: translateY(-2px); }
-.stat-card::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(0,255,136,0.04), transparent);
-  pointer-events: none;
-}
-.stat-icon { font-size: 2rem; flex-shrink: 0; }
-.stat-val  {
-  font-family: 'Syne', sans-serif;
-  font-size: 1.8rem; font-weight: 800;
-  color: var(--text); line-height: 1;
-}
-.stat-lbl  {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.62rem; color: var(--muted);
-  text-transform: uppercase; letter-spacing: 1.5px;
-  margin-top: 3px;
-}
-.stat-sub  {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.68rem; color: var(--accent);
-  margin-top: 4px;
-}
-
-/* ── Card base ── */
-.qz-card {
-  background: var(--surf);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-.qz-card-header {
-  padding: 1rem 1.4rem;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.qz-card-title {
-  font-family: 'Syne', sans-serif;
-  font-size: 0.95rem; font-weight: 800; color: var(--text);
-  display: flex; align-items: center; gap: 0.5rem;
-}
-.qz-card-body { padding: 1.2rem; flex: 1; }
-
-/* ── My Rank banner ── */
-.rank-banner {
-  background: linear-gradient(135deg, rgba(0,255,136,0.08), rgba(124,58,237,0.08));
-  border: 1px solid rgba(0,255,136,0.2);
-  border-radius: 10px;
-  padding: 1rem 1.4rem;
-  display: flex;
-  align-items: center;
-  gap: 1.2rem;
-  margin-bottom: 1.2rem;
-}
-.rank-num {
-  font-family: 'Syne', sans-serif;
-  font-size: 2.4rem; font-weight: 800;
-  color: var(--accent);
-  line-height: 1;
-  min-width: 60px;
-  text-align: center;
-}
-.rank-label {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.62rem; color: var(--muted);
-  text-transform: uppercase; letter-spacing: 1.5px;
-}
-.rank-name {
-  font-family: 'Syne', sans-serif;
-  font-size: 1rem; font-weight: 700; color: var(--text);
-  margin-top: 2px;
-}
-
-/* ── Progress bar ── */
-.progress-wrap { margin-bottom: 1.2rem; }
-.progress-label {
-  display: flex; justify-content: space-between;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.68rem; color: var(--muted);
-  margin-bottom: 0.4rem;
-}
-.progress-label span { color: var(--accent); }
-.progress-track {
-  height: 6px;
-  background: var(--surf2);
-  border-radius: 3px;
-  overflow: hidden;
-}
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--accent), #00c4ff);
-  border-radius: 3px;
-  transition: width 1s ease;
-  width: 0%;
-}
-
-/* ── Recent activity ── */
-.activity-list { display: flex; flex-direction: column; gap: 0.5rem; }
-.activity-item {
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
-  padding: 0.6rem 0.8rem;
-  background: var(--surf2);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.75rem;
-}
-.activity-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.activity-dot.correct { background: var(--accent); }
-.activity-dot.wrong   { background: var(--warn); }
-.activity-title { flex: 1; color: var(--text); }
-.activity-meta  { color: var(--muted); font-size: 0.65rem; }
-.activity-pt    { color: var(--accent); font-weight: 700; }
-
-/* ══════════════════════════════
-   LEADERBOARD WIDGET
-══════════════════════════════ */
-.lb-wrap { overflow: hidden; }
-
-/* Filter row */
-.lb-filter {
-  display: flex;
-  gap: 0.4rem;
-  padding: 0.8rem 1.2rem;
-  border-bottom: 1px solid var(--border);
-  background: var(--surf2);
-}
-.lb-filter select {
-  background: var(--surf);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 0.3rem 0.6rem;
-  color: var(--text);
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.7rem;
-  outline: none;
-  cursor: pointer;
-  flex: 1;
-}
-.lb-filter select:focus { border-color: var(--accent); }
-
-/* List */
-.lb-list { overflow-y: auto; max-height: 480px; }
-.lb-item {
-  display: flex;
-  align-items: center;
-  gap: 0.9rem;
-  padding: 0.85rem 1.2rem;
-  border-bottom: 1px solid var(--border);
-  transition: background 0.12s;
-  position: relative;
-}
-.lb-item:last-child { border-bottom: none; }
-.lb-item:hover      { background: rgba(255,255,255,0.02); }
-.lb-item.is-me      {
-  background: rgba(0,255,136,0.05);
-  border-left: 3px solid var(--accent);
-}
-.lb-item.is-me .lb-name { color: var(--accent); }
-
-/* Rank badge */
-.lb-rank {
-  font-family: 'Syne', sans-serif;
-  font-size: 0.9rem; font-weight: 800;
-  min-width: 28px; text-align: center;
-  color: var(--muted);
-}
-.lb-rank.r1 { color: var(--gold); }
-.lb-rank.r2 { color: var(--silver); }
-.lb-rank.r3 { color: var(--bronze); }
-
-/* Medal icons for top 3 */
-.lb-medal { font-size: 1.1rem; min-width: 24px; text-align: center; }
-
-/* Avatar */
-.lb-avatar {
-  width: 34px; height: 34px;
-  border-radius: 50%;
-  background: var(--surf2);
-  border: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: center;
-  font-family: 'Syne', sans-serif;
-  font-size: 0.8rem; font-weight: 800;
-  color: var(--muted);
-  flex-shrink: 0;
-}
-.lb-item.r1 .lb-avatar { border-color: var(--gold);   color: var(--gold); }
-.lb-item.r2 .lb-avatar { border-color: var(--silver); color: var(--silver); }
-.lb-item.r3 .lb-avatar { border-color: var(--bronze); color: var(--bronze); }
-.lb-item.is-me .lb-avatar { border-color: var(--accent); color: var(--accent); }
-
-/* Info */
-.lb-info { flex: 1; min-width: 0; }
-.lb-name {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.8rem; font-weight: 600; color: var(--text);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.lb-nim  {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.62rem; color: var(--muted); margin-top: 1px;
-}
-
-/* Stats */
-.lb-stats { text-align: right; flex-shrink: 0; }
-.lb-pt    {
-  font-family: 'Syne', sans-serif;
-  font-size: 1rem; font-weight: 800; color: var(--text);
-  line-height: 1;
-}
-.lb-pt-lbl {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.58rem; color: var(--muted);
-  text-transform: uppercase; letter-spacing: 1px;
-}
-.lb-solved {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.62rem; color: var(--muted);
-  margin-top: 2px;
-}
-.lb-creator-pt {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.6rem; color: var(--purple);
-}
-
-/* ── My position bar (bottom of leaderboard) ── */
-.lb-my-pos {
-  padding: 0.8rem 1.2rem;
-  border-top: 1px solid var(--border);
-  background: rgba(0,255,136,0.04);
-  display: flex; align-items: center; gap: 0.8rem;
-}
-.lb-my-pos-rank {
-  font-family: 'Syne', sans-serif;
-  font-size: 1rem; font-weight: 800; color: var(--accent);
-  min-width: 30px;
-}
-.lb-my-pos-info {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.72rem; color: var(--muted); flex: 1;
-}
-.lb-my-pos-pt {
-  font-family: 'Syne', sans-serif;
-  font-size: 0.9rem; font-weight: 800; color: var(--text);
-}
-
-/* ── Empty / loading ── */
-.lb-empty {
-  padding: 2.5rem;
-  text-align: center;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.8rem;
-  color: var(--muted);
-}
-.lb-empty-icon { font-size: 2rem; opacity: 0.3; margin-bottom: 0.6rem; }
-
-/* ── Responsive ── */
-@media (max-width: 992px) {
-  .dash-grid { grid-template-columns: 1fr; }
-  .stat-row  { grid-template-columns: 1fr 1fr; }
-}
-@media (max-width: 576px) {
-  .stat-row { grid-template-columns: 1fr 1fr; }
-  .stat-val { font-size: 1.4rem; }
-}
-</style>
-{% endblock %}
-
-{% block content %}
+{% endblock %} {% block content %}
 <div class="dash-grid">
-
   <!-- ── Stat Cards ── -->
   <div class="stat-row">
     <div class="stat-card">
@@ -378,33 +44,76 @@
   </div>
 
   <!-- ── Kolom Kiri ── -->
-  <div style="display:flex;flex-direction:column;gap:1.2rem">
-
+  <div style="display: flex; flex-direction: column; gap: 1.2rem">
     <!-- My Progress -->
     <div class="qz-card">
       <div class="qz-card-header">
         <span class="qz-card-title">📊 Progress Kamu</span>
-        <a href="/mahasiswa/quiz" style="font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:var(--accent);text-decoration:none">
+        <a
+          href="/mahasiswa/quiz"
+          style="
+            font-family: &quot;JetBrains Mono&quot;, monospace;
+            font-size: 0.7rem;
+            color: var(--accent);
+            text-decoration: none;
+          "
+        >
           Lanjut ngoding →
         </a>
       </div>
       <div class="qz-card-body">
-
         <!-- Rank banner -->
         <div class="rank-banner">
           <div>
-            <div style="font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:var(--muted);letter-spacing:2px;text-transform:uppercase">Peringkat</div>
+            <div
+              style="
+                font-family: &quot;JetBrains Mono&quot;, monospace;
+                font-size: 0.6rem;
+                color: var(--muted);
+                letter-spacing: 2px;
+                text-transform: uppercase;
+              "
+            >
+              Peringkat
+            </div>
             <div class="rank-num" id="b-rank">—</div>
           </div>
-          <div style="width:1px;height:50px;background:var(--border);flex-shrink:0"></div>
+          <div
+            style="
+              width: 1px;
+              height: 50px;
+              background: var(--border);
+              flex-shrink: 0;
+            "
+          ></div>
           <div>
             <div class="rank-label">Nama</div>
             <div class="rank-name" id="b-nama">—</div>
-            <div style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--muted);margin-top:2px" id="b-nim">—</div>
+            <div
+              style="
+                font-family: &quot;JetBrains Mono&quot;, monospace;
+                font-size: 0.68rem;
+                color: var(--muted);
+                margin-top: 2px;
+              "
+              id="b-nim"
+            >
+              —
+            </div>
           </div>
-          <div style="margin-left:auto;text-align:right">
+          <div style="margin-left: auto; text-align: right">
             <div class="rank-label">Total Point</div>
-            <div style="font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;color:var(--accent)" id="b-pt">0</div>
+            <div
+              style="
+                font-family: &quot;Syne&quot;, sans-serif;
+                font-size: 1.4rem;
+                font-weight: 800;
+                color: var(--accent);
+              "
+              id="b-pt"
+            >
+              0
+            </div>
           </div>
         </div>
 
@@ -412,7 +121,10 @@
         <div class="progress-wrap">
           <div class="progress-label">
             <span>Progress Soal</span>
-            <span><span id="pb-done">0</span> / <span id="pb-total">0</span> soal</span>
+            <span
+              ><span id="pb-done">0</span> /
+              <span id="pb-total">0</span> soal</span
+            >
           </div>
           <div class="progress-track">
             <div class="progress-fill" id="progress-fill"></div>
@@ -420,17 +132,72 @@
         </div>
 
         <!-- Point breakdown -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.7rem">
-          <div style="background:var(--surf2);border:1px solid var(--border);border-radius:8px;padding:0.8rem 1rem">
-            <div style="font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Quiz Point</div>
-            <div style="font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;color:var(--text);margin-top:3px" id="bd-quiz">—</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem">
+          <div
+            style="
+              background: var(--surf2);
+              border: 1px solid var(--border);
+              border-radius: 8px;
+              padding: 0.8rem 1rem;
+            "
+          >
+            <div
+              style="
+                font-family: &quot;JetBrains Mono&quot;, monospace;
+                font-size: 0.6rem;
+                color: var(--muted);
+                text-transform: uppercase;
+                letter-spacing: 1px;
+              "
+            >
+              Quiz Point
+            </div>
+            <div
+              style="
+                font-family: &quot;Syne&quot;, sans-serif;
+                font-size: 1.2rem;
+                font-weight: 800;
+                color: var(--text);
+                margin-top: 3px;
+              "
+              id="bd-quiz"
+            >
+              —
+            </div>
           </div>
-          <div style="background:var(--surf2);border:1px solid var(--border);border-radius:8px;padding:0.8rem 1rem">
-            <div style="font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Creator Point</div>
-            <div style="font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;color:var(--purple);margin-top:3px" id="bd-creator">—</div>
+          <div
+            style="
+              background: var(--surf2);
+              border: 1px solid var(--border);
+              border-radius: 8px;
+              padding: 0.8rem 1rem;
+            "
+          >
+            <div
+              style="
+                font-family: &quot;JetBrains Mono&quot;, monospace;
+                font-size: 0.6rem;
+                color: var(--muted);
+                text-transform: uppercase;
+                letter-spacing: 1px;
+              "
+            >
+              Creator Point
+            </div>
+            <div
+              style="
+                font-family: &quot;Syne&quot;, sans-serif;
+                font-size: 1.2rem;
+                font-weight: 800;
+                color: var(--purple);
+                margin-top: 3px;
+              "
+              id="bd-creator"
+            >
+              —
+            </div>
           </div>
         </div>
-
       </div>
     </div>
 
@@ -442,22 +209,38 @@
           Lihat semua →
         </a> -->
       </div>
-      <div class="qz-card-body" style="padding:0.8rem">
+      <div class="qz-card-body" style="padding: 0.8rem">
         <div class="activity-list" id="activity-list">
-          <div style="text-align:center;padding:1.5rem;font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--muted)">
-            <i class="fas fa-spinner fa-spin" style="margin-right:6px"></i>Memuat...
+          <div
+            style="
+              text-align: center;
+              padding: 1.5rem;
+              font-family: &quot;JetBrains Mono&quot;, monospace;
+              font-size: 0.78rem;
+              color: var(--muted);
+            "
+          >
+            <i class="fas fa-spinner fa-spin" style="margin-right: 6px"></i
+            >Memuat...
           </div>
         </div>
       </div>
     </div>
-
   </div>
 
   <!-- ── Kolom Kanan: Leaderboard ── -->
   <div class="qz-card lb-wrap">
     <div class="qz-card-header">
       <span class="qz-card-title">🏆 Leaderboard</span>
-      <span style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--muted)" id="lb-updated">—</span>
+      <span
+        style="
+          font-family: &quot;JetBrains Mono&quot;, monospace;
+          font-size: 0.65rem;
+          color: var(--muted);
+        "
+        id="lb-updated"
+        >—</span
+      >
     </div>
 
     <!-- Filter angkatan -->
@@ -476,216 +259,228 @@
     </div>
 
     <!-- My position (jika tidak di top 10) -->
-    <div class="lb-my-pos" id="lb-my-pos" style="display:none">
+    <div class="lb-my-pos" id="lb-my-pos" style="display: none">
       <div class="lb-my-pos-rank" id="lmp-rank">—</div>
       <div class="lb-my-pos-info" id="lmp-info">Posisimu</div>
       <div class="lb-my-pos-pt" id="lmp-pt">—</div>
     </div>
-
   </div>
-
 </div>
-{% endblock %}
-
-
-{% block js %}
+{% endblock %} {% block js %}
 <script>
-// ─── State ───────────────────────────────────────────
-let dashData     = null;
-let allAngkatan  = [];
-let myNim        = '';
+  // ─── State ───────────────────────────────────────────
+  let dashData = null;
+  let allAngkatan = [];
+  let myNim = "";
 
-// ─── Boot ────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', async () => {
-  await loadDashboard();
-  await loadHistory();
-});
+  // ─── Boot ────────────────────────────────────────────
+  document.addEventListener("DOMContentLoaded", async () => {
+    await loadDashboard();
+    await loadHistory();
+  });
 
-// ─── Load dashboard data ──────────────────────────────
-async function loadDashboard() {
-  try {
-    const res  = await fetch('/api/dashboard');
-    const data = await res.json();
-    if (data.error) return;
+  // ─── Load dashboard data ──────────────────────────────
+  async function loadDashboard() {
+    try {
+      const res = await fetch("/api/dashboard");
+      const data = await res.json();
+      if (data.error) return;
 
-    dashData = data;
-    myNim    = data.my.nim;
+      dashData = data;
+      myNim = data.my.nim;
 
-    renderStats(data.my);
-    renderProgress(data.my);
-    renderLeaderboard(data.leaderboard, data.my);
-    buildAngkatanFilter(data.leaderboard);
+      renderStats(data.my);
+      renderProgress(data.my);
+      renderLeaderboard(data.leaderboard, data.my);
+      buildAngkatanFilter(data.leaderboard);
 
-    document.getElementById('lb-updated').textContent =
-      'Update: ' + new Date().toLocaleTimeString('id-ID');
-  } catch(e) {
-    console.error('Dashboard error:', e);
+      document.getElementById("lb-updated").textContent =
+        "Update: " + new Date().toLocaleTimeString("id-ID");
+    } catch (e) {
+      console.error("Dashboard error:", e);
+    }
   }
-}
 
-// ─── Stat cards ──────────────────────────────────────
-function renderStats(my) {
-  const quizPt   = my.total_point - (my.total_creator_point || 0);
+  // ─── Stat cards ──────────────────────────────────────
+  function renderStats(my) {
+    const quizPt = my.total_point - (my.total_creator_point || 0);
 
-  document.getElementById('s-point').textContent   = fmtNum(my.total_point);
-  document.getElementById('s-solved').textContent  = my.total_soal_solved;
-  document.getElementById('s-rank').textContent    = '#' + my.rank;
-  document.getElementById('s-challenge').textContent = my.total_challenge_created || 0;
+    document.getElementById("s-point").textContent = fmtNum(my.total_point);
+    document.getElementById("s-solved").textContent = my.total_soal_solved;
+    document.getElementById("s-rank").textContent = "#" + my.rank;
+    document.getElementById("s-challenge").textContent =
+      my.total_challenge_created || 0;
 
-  const cpText = my.total_creator_point > 0
-    ? `+${my.total_creator_point} creator pt` : '';
-  document.getElementById('s-creator-pt').textContent = cpText;
+    const cpText =
+      my.total_creator_point > 0 ? `+${my.total_creator_point} creator pt` : "";
+    document.getElementById("s-creator-pt").textContent = cpText;
 
-  document.getElementById('s-solved-sub').textContent =
-    `dari ${my.total_soal} soal`;
+    document.getElementById("s-solved-sub").textContent =
+      `dari ${my.total_soal} soal`;
 
-  const chSub = my.total_creator_point > 0
-    ? `${my.total_creator_point} creator pt` : '';
-  document.getElementById('s-challenge-sub').textContent = chSub;
-}
+    const chSub =
+      my.total_creator_point > 0 ? `${my.total_creator_point} creator pt` : "";
+    document.getElementById("s-challenge-sub").textContent = chSub;
+  }
 
-// ─── Progress card ────────────────────────────────────
-function renderProgress(my) {
-  document.getElementById('b-rank').textContent = '#' + my.rank;
-  document.getElementById('b-nama').textContent = my.nama || '—';
-  document.getElementById('b-nim').textContent  = my.nim  || '—';
-  document.getElementById('b-pt').textContent   = fmtNum(my.total_point);
+  // ─── Progress card ────────────────────────────────────
+  function renderProgress(my) {
+    document.getElementById("b-rank").textContent = "#" + my.rank;
+    document.getElementById("b-nama").textContent = my.nama || "—";
+    document.getElementById("b-nim").textContent = my.nim || "—";
+    document.getElementById("b-pt").textContent = fmtNum(my.total_point);
 
-  const done  = my.total_soal_solved;
-  const total = my.total_soal;
-  const pct   = total > 0 ? Math.round(done / total * 100) : 0;
+    const done = my.total_soal_solved;
+    const total = my.total_soal;
+    const pct = total > 0 ? Math.round((done / total) * 100) : 0;
 
-  document.getElementById('pb-done').textContent  = done;
-  document.getElementById('pb-total').textContent = total;
+    document.getElementById("pb-done").textContent = done;
+    document.getElementById("pb-total").textContent = total;
 
-  setTimeout(() => {
-    document.getElementById('progress-fill').style.width = pct + '%';
-  }, 300);
+    setTimeout(() => {
+      document.getElementById("progress-fill").style.width = pct + "%";
+    }, 300);
 
-  const quizPt = my.total_point - (my.total_creator_point || 0);
-  document.getElementById('bd-quiz').textContent    = fmtNum(quizPt);
-  document.getElementById('bd-creator').textContent = fmtNum(my.total_creator_point || 0);
-}
+    const quizPt = my.total_point - (my.total_creator_point || 0);
+    document.getElementById("bd-quiz").textContent = fmtNum(quizPt);
+    document.getElementById("bd-creator").textContent = fmtNum(
+      my.total_creator_point || 0,
+    );
+  }
 
-// ─── Leaderboard render ───────────────────────────────
-function renderLeaderboard(lb, my) {
-  const list   = document.getElementById('lb-list');
-  const myPos  = document.getElementById('lb-my-pos');
+  // ─── Leaderboard render ───────────────────────────────
+  function renderLeaderboard(lb, my) {
+    const list = document.getElementById("lb-list");
+    const myPos = document.getElementById("lb-my-pos");
 
-  if (!lb || !lb.length) {
-    list.innerHTML = `<div class="lb-empty">
+    if (!lb || !lb.length) {
+      list.innerHTML = `<div class="lb-empty">
       <div class="lb-empty-icon">🏜️</div>Belum ada data leaderboard</div>`;
-    return;
-  }
+      return;
+    }
 
-  const medals  = { 1: '🥇', 2: '🥈', 3: '🥉' };
-  const isInTop = lb.some(r => r.nim === my.nim);
+    const medals = { 1: "🥇", 2: "🥈", 3: "🥉" };
+    const isInTop = lb.some((r) => r.nim === my.nim);
 
-  list.innerHTML = lb.map(r => {
-    const rank    = r.rank;
-    const isMe    = r.nim === my.nim;
-    const initial = (r.nama_mahasiswa || '?').charAt(0).toUpperCase();
-    const medal   = medals[rank] || '';
-    const rankCls = rank <= 3 ? `r${rank}` : '';
+    list.innerHTML = lb
+      .map((r) => {
+        const rank = r.rank;
+        const isMe = r.nim === my.nim;
+        const initial = (r.nama_mahasiswa || "?").charAt(0).toUpperCase();
+        const medal = medals[rank] || "";
+        const rankCls = rank <= 3 ? `r${rank}` : "";
 
-    return `<div class="lb-item ${rankCls} ${isMe ? 'is-me' : ''}">
-      <div class="lb-rank ${rankCls}">${rank <= 3 ? medal : '#'+rank}</div>
+        return `<div class="lb-item ${rankCls} ${isMe ? "is-me" : ""}">
+      <div class="lb-rank ${rankCls}">${rank <= 3 ? medal : "#" + rank}</div>
       <div class="lb-avatar">${initial}</div>
       <div class="lb-info">
-        <div class="lb-name">${esc(r.nama_mahasiswa)}${isMe ? ' <span style="font-size:.6rem;color:var(--accent)">(kamu)</span>' : ''}</div>
+        <div class="lb-name">${esc(r.nama_mahasiswa)}${isMe ? ' <span style="font-size:.6rem;color:var(--accent)">(kamu)</span>' : ""}</div>
         <div class="lb-nim">${esc(r.nim)}</div>
       </div>
       <div class="lb-stats">
         <div class="lb-pt">${fmtNum(r.total_point)}</div>
         <div class="lb-pt-lbl">point</div>
         <div class="lb-solved">${r.total_soal_solved} soal</div>
-        ${r.total_creator_point > 0
-          ? `<div class="lb-creator-pt">+${r.total_creator_point} creator</div>`
-          : ''}
+        ${
+          r.total_creator_point > 0
+            ? `<div class="lb-creator-pt">+${r.total_creator_point} creator</div>`
+            : ""
+        }
       </div>
     </div>`;
-  }).join('');
+      })
+      .join("");
 
-  // My position bar (jika tidak masuk top 10)
-  if (!isInTop && my.rank && my.rank !== '—') {
-    document.getElementById('lmp-rank').textContent = '#' + my.rank;
-    document.getElementById('lmp-info').textContent = my.nama + ' (kamu)';
-    document.getElementById('lmp-pt').textContent   = fmtNum(my.total_point) + ' pt';
-    myPos.style.display = 'flex';
-  } else {
-    myPos.style.display = 'none';
+    // My position bar (jika tidak masuk top 10)
+    if (!isInTop && my.rank && my.rank !== "—") {
+      document.getElementById("lmp-rank").textContent = "#" + my.rank;
+      document.getElementById("lmp-info").textContent = my.nama + " (kamu)";
+      document.getElementById("lmp-pt").textContent =
+        fmtNum(my.total_point) + " pt";
+      myPos.style.display = "flex";
+    } else {
+      myPos.style.display = "none";
+    }
   }
-}
 
-// ─── Filter angkatan ──────────────────────────────────
-function buildAngkatanFilter(lb) {
-  // Ambil angkatan dari leaderboard (jika ada field angkatan)
-  // Untuk sekarang skip jika tidak ada data angkatan
-  const sel = document.getElementById('lb-angkatan');
-  allAngkatan.forEach(a => {
-    const opt = document.createElement('option');
-    opt.value = a; opt.textContent = 'Angkatan ' + a;
-    sel.appendChild(opt);
-  });
-}
-
-function filterLeaderboard() {
-  if (!dashData) return;
-  // Placeholder: filter by angkatan jika ada data
-  renderLeaderboard(dashData.leaderboard, dashData.my);
-}
-
-// ─── Load history ─────────────────────────────────────
-async function loadHistory() {
-  try {
-    const res  = await fetch('/mahasiswa/api/my-history');
-    const data = await res.json();
-    renderActivity(Array.isArray(data) ? data.slice(0, 6) : []);
-  } catch(e) {
-    document.getElementById('activity-list').innerHTML =
-      '<div style="text-align:center;padding:1rem;font-family:\'JetBrains Mono\',monospace;font-size:.75rem;color:var(--muted)">Gagal memuat riwayat.</div>';
+  // ─── Filter angkatan ──────────────────────────────────
+  function buildAngkatanFilter(lb) {
+    // Ambil angkatan dari leaderboard (jika ada field angkatan)
+    // Untuk sekarang skip jika tidak ada data angkatan
+    const sel = document.getElementById("lb-angkatan");
+    allAngkatan.forEach((a) => {
+      const opt = document.createElement("option");
+      opt.value = a;
+      opt.textContent = "Angkatan " + a;
+      sel.appendChild(opt);
+    });
   }
-}
 
-function renderActivity(list) {
-  const el = document.getElementById('activity-list');
-  if (!list.length) {
-    el.innerHTML = `<div style="text-align:center;padding:1.5rem;font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--muted)">
+  function filterLeaderboard() {
+    if (!dashData) return;
+    // Placeholder: filter by angkatan jika ada data
+    renderLeaderboard(dashData.leaderboard, dashData.my);
+  }
+
+  // ─── Load history ─────────────────────────────────────
+  async function loadHistory() {
+    try {
+      const res = await fetch("/mahasiswa/api/my-history");
+      const data = await res.json();
+      renderActivity(Array.isArray(data) ? data.slice(0, 6) : []);
+    } catch (e) {
+      document.getElementById("activity-list").innerHTML =
+        "<div style=\"text-align:center;padding:1rem;font-family:'JetBrains Mono',monospace;font-size:.75rem;color:var(--muted)\">Gagal memuat riwayat.</div>";
+    }
+  }
+
+  function renderActivity(list) {
+    const el = document.getElementById("activity-list");
+    if (!list.length) {
+      el.innerHTML = `<div style="text-align:center;padding:1.5rem;font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--muted)">
       <div style="font-size:1.8rem;opacity:.3;margin-bottom:.4rem">📭</div>
       Belum ada aktivitas
     </div>`;
-    return;
-  }
+      return;
+    }
 
-  el.innerHTML = list.map(a => {
-    const timeStr = a.solved_at
-      ? new Date(a.solved_at).toLocaleDateString('id-ID', {day:'numeric',month:'short'})
-      : '—';
-    return `<div class="activity-item">
-      <div class="activity-dot ${a.is_correct ? 'correct' : 'wrong'}"></div>
-      <div class="activity-title">${esc(a.judul || 'Soal #' + a.id_soal)}</div>
+    el.innerHTML = list
+      .map((a) => {
+        const timeStr = a.solved_at
+          ? new Date(a.solved_at).toLocaleDateString("id-ID", {
+              day: "numeric",
+              month: "short",
+            })
+          : "—";
+        return `<div class="activity-item">
+      <div class="activity-dot ${a.is_correct ? "correct" : "wrong"}"></div>
+      <div class="activity-title">${esc(a.judul || "Soal #" + a.id_soal)}</div>
       <div class="activity-meta">
         <span class="bdg">${esc(a.bahasa)}</span>
         ${a.is_correct ? `<span class="activity-pt">✓</span>` : '<span style="color:var(--warn)">✗</span>'}
         <span style="margin-left:4px">${timeStr}</span>
       </div>
     </div>`;
-  }).join('');
-}
+      })
+      .join("");
+  }
 
-// ─── Utils ────────────────────────────────────────────
-function fmtNum(n) {
-  return (n || 0).toLocaleString('id-ID');
-}
-function esc(s) {
-  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
+  // ─── Utils ────────────────────────────────────────────
+  function fmtNum(n) {
+    return (n || 0).toLocaleString("id-ID");
+  }
+  function esc(s) {
+    return (s || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+  }
 
-// Badge style inline (untuk activity)
-const style = document.createElement('style');
-style.textContent = `.bdg{font-family:'JetBrains Mono',monospace;font-size:.58rem;font-weight:700;
+  // Badge style inline (untuk activity)
+  const style = document.createElement("style");
+  style.textContent = `.bdg{font-family:'JetBrains Mono',monospace;font-size:.58rem;font-weight:700;
   padding:.1rem .4rem;border-radius:3px;background:rgba(56,189,248,.12);color:#38bdf8;
   text-transform:uppercase;letter-spacing:.5px}`;
-document.head.appendChild(style);
+  document.head.appendChild(style);
 </script>
 {% endblock %}
